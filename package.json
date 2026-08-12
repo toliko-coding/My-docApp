@@ -2,6 +2,9 @@
   "name": "my-docapp",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "engines": {
+    "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >=25.0.0"
+  },
   "dependencies": {
     "@expo/ui": "~57.0.10",
     "@expo/vector-icons": "^15.0.2",

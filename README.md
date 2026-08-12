@@ -33,6 +33,10 @@ supabase/migrations/       SQL schema, RLS policies, storage bucket setup
 
 ## Setup
 
+### 0. Node version
+
+Requires Node **20.19.4+, 22.13+, or 24.3+** (see `engines` in `package.json`). Metro and `@expo/env` (the `.env` loader) both depend on newer `node:util`/`node:fs` APIs — on an older Node, `.env` loading crashes with `parseEnv is not a function` as soon as `.env` has real content in it. If you're on an unsupported version, install a newer one, e.g. with [`n`](https://github.com/tj/n): `n 22` (or `n lts`).
+
 ### 1. Install dependencies
 
 ```bash
@@ -48,6 +52,9 @@ npm install
    ```bash
    cp .env.example .env
    ```
+
+   - `EXPO_PUBLIC_SUPABASE_URL` is the **base project URL**, e.g. `https://<ref>.supabase.co` — not a `/rest/v1/...` or other sub-path; the client library appends its own paths.
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` is the **anon / public** key (Supabase's newer dashboards call this the **publishable** key, `sb_publishable_...`). Never use the **secret** key (`sb_secret_...`, equivalent to `service_role`) here — it bypasses Row Level Security and must never ship inside the mobile app.
 
 Until `.env` is filled in, the app runs with `isSupabaseConfigured = false` — auth screens show an explicit "backend not configured" state instead of pretending to work.
 
