@@ -1,0 +1,61 @@
+import type en from './en';
+
+const he: typeof en = {
+  common: {
+    save: 'שמירה',
+    cancel: 'ביטול',
+    edit: 'עריכה',
+    delete: 'מחיקה',
+    confirm: 'אישור',
+    loading: 'טוען…',
+    retry: 'נסה שוב',
+    seeAll: 'הצג הכל',
+    error: 'משהו השתבש',
+  },
+  auth: {
+    signIn: 'התחברות',
+    signUp: 'יצירת חשבון',
+    email: 'אימייל',
+    password: 'סיסמה',
+    continueWithGoogle: 'המשך עם Google',
+    continueWithApple: 'המשך עם Apple',
+    noAccount: 'עדיין אין לך חשבון?',
+    haveAccount: 'כבר יש לך חשבון?',
+    signOut: 'התנתקות',
+    signInError: 'ההתחברות נכשלה. בדוק את הפרטים ונסה שוב.',
+  },
+  tabs: {
+    home: 'בית',
+    bills: 'חשבונות',
+    scan: 'סריקה',
+    calendar: 'יומן',
+    profile: 'פרופיל',
+  },
+  dashboard: {
+    greeting: 'שלום, {{name}}',
+    outstandingBalance: 'לתשלום',
+    billsRemaining_one: 'חשבון פתוח אחד',
+    billsRemaining_other: '{{count}} חשבונות פתוחים',
+    paidThisMonth: 'שולם החודש',
+    upcomingPayments: 'תשלומים קרובים',
+    monthlySpending: 'הוצאות החודש',
+    categories: 'קטגוריות',
+    dueOn: 'לתשלום עד {{date}}',
+  },
+  emptyStates: {
+    noBillsTitle: 'עדיין אין חשבונות',
+    noBillsSubtitle: 'סרוק את החשבונית הראשונה שלך ואנחנו נסדר הכל בשבילך.',
+    scanBill: 'סריקת חשבונית',
+    notConfiguredTitle: 'ה-Backend עוד לא מחובר',
+    notConfiguredSubtitle: 'הוסף את פרטי ה-Supabase בקובץ \u200E.env כדי לחבר מסך זה לנתונים אמיתיים.',
+  },
+  status: {
+    pending: 'ממתין',
+    paid: 'שולם',
+    overdue: 'באיחור',
+    partially_paid: 'שולם חלקית',
+    unknown: 'לא ידוע',
+  },
+};
+
+export default he;

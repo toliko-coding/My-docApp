@@ -1,0 +1,60 @@
+const en = {
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    edit: 'Edit',
+    delete: 'Delete',
+    confirm: 'Confirm',
+    loading: 'Loading…',
+    retry: 'Retry',
+    seeAll: 'View All',
+    error: 'Something went wrong',
+  },
+  auth: {
+    signIn: 'Sign In',
+    signUp: 'Create Account',
+    email: 'Email',
+    password: 'Password',
+    continueWithGoogle: 'Continue with Google',
+    continueWithApple: 'Continue with Apple',
+    noAccount: "Don't have an account?",
+    haveAccount: 'Already have an account?',
+    signOut: 'Sign Out',
+    signInError: 'Could not sign in. Check your details and try again.',
+  },
+  tabs: {
+    home: 'Home',
+    bills: 'Bills',
+    scan: 'Scan',
+    calendar: 'Calendar',
+    profile: 'Profile',
+  },
+  dashboard: {
+    greeting: 'Hello, {{name}}',
+    outstandingBalance: 'Outstanding Balance',
+    billsRemaining_one: '{{count}} bill remaining',
+    billsRemaining_other: '{{count}} bills remaining',
+    paidThisMonth: 'Paid This Month',
+    upcomingPayments: 'Upcoming Payments',
+    monthlySpending: 'Monthly Spending',
+    categories: 'Categories',
+    dueOn: 'Due {{date}}',
+  },
+  emptyStates: {
+    noBillsTitle: 'No bills yet',
+    noBillsSubtitle: "Scan your first bill and we'll organize everything for you.",
+    scanBill: 'Scan Bill',
+    notConfiguredTitle: 'Backend not configured',
+    notConfiguredSubtitle:
+      'Add your Supabase credentials in .env to connect this screen to real data.',
+  },
+  status: {
+    pending: 'Pending',
+    paid: 'Paid',
+    overdue: 'Overdue',
+    partially_paid: 'Partially Paid',
+    unknown: 'Unknown',
+  },
+};
+
+export default en;
