@@ -9,11 +9,12 @@ import { useTheme } from '@/hooks/use-theme';
 import type { BillWithRelations } from '@/types/database';
 import { getEffectiveStatus } from '@/utils/bill-status';
 import { formatAmount } from '@/utils/currency';
-import { formatDate } from '@/utils/date';
+import { formatBillingPeriod, formatDate } from '@/utils/date';
 
 export function BillListItem({ bill, onPress }: { bill: BillWithRelations; onPress: () => void }) {
   const theme = useTheme();
   const status = getEffectiveStatus(bill);
+  const billingPeriod = formatBillingPeriod(bill.billing_period_start, bill.billing_period_end);
 
   return (
     <Pressable accessibilityRole="button" onPress={onPress}>
@@ -26,6 +27,11 @@ export function BillListItem({ bill, onPress }: { bill: BillWithRelations; onPre
           <ThemedText type="small" themeColor="textSecondary">
             {bill.due_date ? `Due ${formatDate(bill.due_date)}` : 'No due date'}
           </ThemedText>
+          {billingPeriod ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {billingPeriod}
+            </ThemedText>
+          ) : null}
         </View>
         <View style={styles.right}>
           <ThemedText style={styles.amount}>{formatAmount(bill.amount, bill.currency)}</ThemedText>
