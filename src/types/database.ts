@@ -5,6 +5,12 @@
  * `supabase gen types typescript` so it can never drift from the live
  * schema — this manual version exists so the app has full type coverage
  * before that project is provisioned.
+ *
+ * These entity shapes are declared with `type`, not `interface`: an
+ * `interface` doesn't structurally satisfy `extends Record<string, unknown>`
+ * the way a `type` alias does, which is exactly what postgrest-js's
+ * `GenericTable` constraint checks against — using `interface` here silently
+ * collapses every table's Insert/Update to `never`.
  */
 
 export type BillStatus = 'pending' | 'paid' | 'overdue' | 'partially_paid' | 'unknown';
@@ -22,7 +28,7 @@ export type NotificationType =
 export type NotificationStatus = 'scheduled' | 'sent' | 'cancelled';
 export type ThemePreference = 'light' | 'dark' | 'system';
 
-export interface Profile {
+export type Profile = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
@@ -30,9 +36,9 @@ export interface Profile {
   currency: string;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface Category {
+export type Category = {
   id: string;
   user_id: string | null;
   key: string;
@@ -43,9 +49,9 @@ export interface Category {
   sort_order: number;
   is_system: boolean;
   created_at: string;
-}
+};
 
-export interface Provider {
+export type Provider = {
   id: string;
   user_id: string | null;
   name: string;
@@ -56,9 +62,9 @@ export interface Provider {
   logo_url: string | null;
   is_system: boolean;
   created_at: string;
-}
+};
 
-export interface DocumentRow {
+export type DocumentRow = {
   id: string;
   user_id: string;
   storage_path: string;
@@ -71,7 +77,7 @@ export interface DocumentRow {
   processing_error: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
 /** Per-field confidence scores (0..1) attached to a document_extractions row. */
 export type ExtractionConfidence = Partial<
@@ -89,7 +95,7 @@ export type ExtractionConfidence = Partial<
   >
 >;
 
-export interface DocumentExtraction {
+export type DocumentExtraction = {
   id: string;
   document_id: string;
   user_id: string;
@@ -116,9 +122,9 @@ export interface DocumentExtraction {
   confidence: ExtractionConfidence;
   review_status: ReviewStatus;
   created_at: string;
-}
+};
 
-export interface Bill {
+export type Bill = {
   id: string;
   user_id: string;
   provider_id: string | null;
@@ -141,9 +147,14 @@ export interface Bill {
   notes: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface Payment {
+export type BillWithRelations = Bill & {
+  provider: Provider | null;
+  category: Category | null;
+};
+
+export type Payment = {
   id: string;
   user_id: string;
   bill_id: string;
@@ -155,9 +166,9 @@ export interface Payment {
   reference_number: string | null;
   notes: string | null;
   created_at: string;
-}
+};
 
-export interface DocumentMatch {
+export type DocumentMatch = {
   id: string;
   user_id: string;
   bill_id: string;
@@ -167,9 +178,9 @@ export interface DocumentMatch {
   matched_fields: Record<string, boolean>;
   status: MatchStatus;
   created_at: string;
-}
+};
 
-export interface AppNotification {
+export type AppNotification = {
   id: string;
   user_id: string;
   bill_id: string;
@@ -178,9 +189,9 @@ export interface AppNotification {
   sent_at: string | null;
   status: NotificationStatus;
   created_at: string;
-}
+};
 
-export interface UserSettings {
+export type UserSettings = {
   user_id: string;
   theme: ThemePreference;
   notifications_enabled: boolean;
@@ -188,61 +199,77 @@ export interface UserSettings {
   push_token: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
 /** Minimal Supabase `Database` generic — enough for typed table access. */
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Partial<Profile> & { id: string }; Update: Partial<Profile> };
+      profiles: {
+        Row: Profile;
+        Insert: Partial<Profile> & { id: string };
+        Update: Partial<Profile>;
+        Relationships: [];
+      };
       categories: {
         Row: Category;
         Insert: Partial<Category> & Pick<Category, 'key' | 'name_en' | 'name_he'>;
         Update: Partial<Category>;
+        Relationships: [];
       };
       providers: {
         Row: Provider;
         Insert: Partial<Provider> & Pick<Provider, 'name' | 'normalized_name'>;
         Update: Partial<Provider>;
+        Relationships: [];
       };
       documents: {
         Row: DocumentRow;
         Insert: Partial<DocumentRow> &
           Pick<DocumentRow, 'user_id' | 'storage_path' | 'file_name' | 'mime_type' | 'file_size' | 'file_hash' | 'source'>;
         Update: Partial<DocumentRow>;
+        Relationships: [];
       };
       document_extractions: {
         Row: DocumentExtraction;
         Insert: Partial<DocumentExtraction> & Pick<DocumentExtraction, 'document_id' | 'user_id' | 'ai_provider'>;
         Update: Partial<DocumentExtraction>;
+        Relationships: [];
       };
       bills: {
         Row: Bill;
         Insert: Partial<Bill> & Pick<Bill, 'user_id' | 'amount'>;
         Update: Partial<Bill>;
+        Relationships: [];
       };
       payments: {
         Row: Payment;
         Insert: Partial<Payment> & Pick<Payment, 'user_id' | 'bill_id' | 'amount' | 'paid_date'>;
         Update: Partial<Payment>;
+        Relationships: [];
       };
       document_matches: {
         Row: DocumentMatch;
         Insert: Partial<DocumentMatch> &
           Pick<DocumentMatch, 'user_id' | 'bill_id' | 'document_id' | 'confidence'>;
         Update: Partial<DocumentMatch>;
+        Relationships: [];
       };
       notifications: {
         Row: AppNotification;
         Insert: Partial<AppNotification> &
           Pick<AppNotification, 'user_id' | 'bill_id' | 'type' | 'scheduled_for'>;
         Update: Partial<AppNotification>;
+        Relationships: [];
       };
       user_settings: {
         Row: UserSettings;
         Insert: Partial<UserSettings> & Pick<UserSettings, 'user_id'>;
         Update: Partial<UserSettings>;
+        Relationships: [];
       };
     };
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
   };
-}
+};

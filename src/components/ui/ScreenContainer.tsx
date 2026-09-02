@@ -15,7 +15,7 @@ export function ScreenContainer({ scroll, style, children, ...rest }: ScreenCont
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]} edges={['top']}>
       <Wrapper
-        style={scroll ? undefined : [styles.content, style]}
+        style={scroll ? styles.scrollFlex : [styles.flexContent, style]}
         contentContainerStyle={scroll ? [styles.content, style] : undefined}
         {...rest}>
         {children}
@@ -26,5 +26,10 @@ export function ScreenContainer({ scroll, style, children, ...rest }: ScreenCont
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  content: { flex: 1, padding: Spacing.three, gap: Spacing.four },
+  // Applied to the ScrollView itself (bounds it to the viewport) — never to
+  // contentContainerStyle, which must stay unconstrained so the ScrollView
+  // can measure real content height and actually scroll.
+  scrollFlex: { flex: 1 },
+  content: { padding: Spacing.three, gap: Spacing.four },
+  flexContent: { flex: 1, padding: Spacing.three, gap: Spacing.four },
 });

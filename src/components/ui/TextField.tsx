@@ -5,7 +5,7 @@ import { Radii, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export interface TextFieldProps extends TextInputProps {
-  label: string;
+  label?: string;
   error?: string | null;
 }
 
@@ -14,9 +14,11 @@ export function TextField({ label, error, style, ...rest }: TextFieldProps) {
 
   return (
     <View style={styles.container}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {label}
-      </ThemedText>
+      {label ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {label}
+        </ThemedText>
+      ) : null}
       <TextInput
         placeholderTextColor={theme.textMuted}
         style={[
