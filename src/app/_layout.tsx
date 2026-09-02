@@ -23,6 +23,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="bill" />
+              <Stack.Screen name="document" />
             </Stack>
           </ThemeProvider>
         </AuthProvider>

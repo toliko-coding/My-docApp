@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 
+import { AttachedDocumentCard } from '@/components/documents/AttachedDocumentCard';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -9,6 +10,7 @@ import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Spacing } from '@/constants/theme';
 import { useBill, useDeleteBill, useMarkBillPaid, useMarkBillUnpaid } from '@/hooks/use-bills';
+import { useDocument } from '@/hooks/use-documents';
 import { useTranslation } from '@/i18n';
 import { getEffectiveStatus } from '@/utils/bill-status';
 import { getCategoryName } from '@/utils/category';
@@ -19,6 +21,7 @@ export default function BillDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { locale } = useTranslation();
   const { data: bill, isLoading } = useBill(id);
+  const { data: document } = useDocument(bill?.document_id ?? undefined);
   const markPaid = useMarkBillPaid();
   const markUnpaid = useMarkBillUnpaid();
   const deleteBill = useDeleteBill();
@@ -90,6 +93,10 @@ export default function BillDetailScreen() {
         {bill.customer_number ? <DetailRow label="Customer number" value={bill.customer_number} /> : null}
         {bill.reference_number ? <DetailRow label="Reference number" value={bill.reference_number} /> : null}
       </Card>
+
+      {document ? (
+        <AttachedDocumentCard document={document} onPress={() => router.push(`/document/${document.id}`)} />
+      ) : null}
 
       {bill.notes ? (
         <Card>

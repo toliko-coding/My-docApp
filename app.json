@@ -34,7 +34,14 @@
         }
       ],
       "expo-localization",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "DocApp needs access to your photos so you can attach a bill or receipt image.",
+          "cameraPermission": "DocApp needs access to your camera so you can scan a bill or receipt."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

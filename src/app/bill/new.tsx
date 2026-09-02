@@ -1,17 +1,21 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Alert } from 'react-native';
 
+import { AttachedDocumentCard } from '@/components/documents/AttachedDocumentCard';
 import { BillForm } from '@/components/bills/BillForm';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { useCategories } from '@/hooks/use-categories';
 import { useCreateBill } from '@/hooks/use-bills';
+import { useDocument } from '@/hooks/use-documents';
 import { findOrCreateProvider } from '@/repositories/providers.repository';
 import { useAuth } from '@/contexts/auth-context';
 import type { BillFormValues } from '@/schemas/bill-form.schema';
 
 export default function NewBillScreen() {
   const { user } = useAuth();
+  const { documentId } = useLocalSearchParams<{ documentId?: string }>();
   const { data: categories = [] } = useCategories();
+  const { data: attachedDocument } = useDocument(documentId);
   const createBill = useCreateBill();
 
   async function handleSubmit(values: BillFormValues) {
@@ -22,7 +26,7 @@ export default function NewBillScreen() {
       await createBill.mutateAsync({
         provider_id: provider.id,
         category_id: values.categoryId || null,
-        document_id: null,
+        document_id: documentId ?? null,
         invoice_number: values.invoiceNumber || null,
         customer_number: values.customerNumber || null,
         amount: Number(values.amount),
@@ -48,6 +52,7 @@ export default function NewBillScreen() {
 
   return (
     <ScreenContainer scroll>
+      {attachedDocument ? <AttachedDocumentCard document={attachedDocument} /> : null}
       <BillForm onSubmit={handleSubmit} submitLabel="Add Bill" isSubmitting={createBill.isPending} />
     </ScreenContainer>
   );
