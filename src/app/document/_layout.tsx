@@ -19,7 +19,8 @@ export default function DocumentLayout() {
         headerTintColor: theme.text,
         headerShadowVisible: false,
       }}>
-      <Stack.Screen name="[id]" options={{ title: 'Document' }} />
+      <Stack.Screen name="[id]/index" options={{ title: 'Document' }} />
+      <Stack.Screen name="[id]/review" options={{ title: 'Review Details' }} />
     </Stack>
   );
 }

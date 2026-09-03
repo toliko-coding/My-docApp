@@ -92,6 +92,16 @@ export async function getDocumentSignedUrl(storagePath: string, expiresInSeconds
   return data.signedUrl;
 }
 
+/** Tracks OCR/AI processing progress on the document row itself (drives the scan/review screen's state). */
+export async function setDocumentStatus(
+  id: string,
+  status: DocumentRow['status'],
+  processingError: string | null = null,
+): Promise<void> {
+  const { error } = await supabase.from('documents').update({ status, processing_error: processingError }).eq('id', id);
+  if (error) throw error;
+}
+
 export async function deleteDocument(document: Pick<DocumentRow, 'id' | 'storage_path'>): Promise<void> {
   const { error: storageError } = await supabase.storage.from(BUCKET).remove([document.storage_path]);
   if (storageError) throw storageError;

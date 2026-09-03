@@ -90,13 +90,13 @@ export default function ScanScreen() {
             { text: 'Cancel', style: 'cancel' },
             {
               text: 'Continue',
-              onPress: () => router.push({ pathname: '/bill/new', params: { documentId: document.id } }),
+              onPress: () => router.push(`/document/${document.id}/review`),
             },
           ],
         );
         return;
       }
-      router.push({ pathname: '/bill/new', params: { documentId: document.id } });
+      router.push(`/document/${document.id}/review`);
     } catch (error) {
       console.error('Document upload failed', error);
       const message =

@@ -26,10 +26,11 @@ src/
   types/database.ts        TypeScript types mirroring the SQL schema
   schemas/                 Zod schemas (bill form, AI output contract)
   services/document-processor/  OCR/AI provider abstraction + dev mock
-  repositories/            Data-access layer (Supabase queries): bills, categories, providers, documents
+  repositories/            Data-access layer (Supabase queries): bills, categories, providers, documents, extractions
   utils/                   Pure helper functions (dates, currency, file hashing/validation, category display)
 
 supabase/migrations/       SQL schema, RLS policies, storage bucket setup
+supabase/functions/       Edge Functions (process-document: server-side OCR/AI call, holds the vendor API key)
 ```
 
 ## Setup
@@ -59,7 +60,23 @@ npm install
 
 Until `.env` is filled in, the app runs with `isSupabaseConfigured = false` — auth screens show an explicit "backend not configured" state instead of pretending to work.
 
-### 3. Run the app
+### 3. (Optional) Enable real AI document extraction
+
+Without this step, uploaded documents go through the mock `DocumentProcessor` in development (clearly-fake sample data) and are not processed at all in production builds. To turn on real Claude-powered extraction:
+
+1. Get an API key from [console.anthropic.com](https://console.anthropic.com).
+2. Install the [Supabase CLI](https://supabase.com/docs/guides/cli) and link it to your project: `supabase login`, then `supabase link --project-ref <your-project-ref>`.
+3. Set the key as a server-side secret — it is never present in the app itself:
+   ```bash
+   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+   ```
+4. Deploy the Edge Function that does the actual OCR/AI call:
+   ```bash
+   supabase functions deploy process-document
+   ```
+5. Set `EXPO_PUBLIC_DOCUMENT_PROCESSOR=anthropic` in `.env`.
+
+### 4. Run the app
 
 ```bash
 npx expo start        # then press i / a / w, or scan the QR code with Expo Go
@@ -77,16 +94,16 @@ npm run lint          # expo lint
 
 ## What's real vs. mocked right now
 
-- **Real**: navigation, theming (light/dark), RTL + Hebrew/English i18n, Supabase-backed auth (once `.env` is set), database schema with Row Level Security. Full bills CRUD (create/edit/delete, mark paid/unpaid, filters, provider auto-suggest/learning, categories). Document capture and storage: camera, gallery, and PDF pickers; upload to a private Supabase Storage bucket with signed-URL viewing, SHA-256 content-hash duplicate detection, and a document viewer (open/share/download/delete) linked from a bill's detail screen.
-- **Mocked (development only, clearly labeled)**: `src/services/document-processor/mock-provider.ts` — returns deliberately low-confidence sample data so the review flow can be built before a real OCR/AI vendor account exists. It is never used outside `__DEV__`.
-- **Not built yet**: OCR/AI extraction from an uploaded document (Phase 4), the real dashboard numbers (Phase 5), duplicate/receipt matching and recurring-bill logic (Phase 6), notifications (Phase 7). Screens that would otherwise need this data show honest empty states, not sample numbers.
+- **Real**: navigation, theming (light/dark), RTL + Hebrew/English i18n, Supabase-backed auth (once `.env` is set), database schema with Row Level Security. Full bills CRUD (create/edit/delete, mark paid/unpaid, filters, provider auto-suggest/learning, categories). Document capture and storage: camera, gallery, and PDF pickers; upload to a private Supabase Storage bucket with signed-URL viewing, SHA-256 content-hash duplicate detection, and a document viewer (open/share/download/delete) linked from a bill's detail screen. AI document extraction: after upload, a review screen runs the configured `DocumentProcessor`, shows the extracted provider/category/amount/dates with a per-field confidence flag ("AI wasn't sure — please check"), lets the user correct anything before confirming, and pre-fills the Add Bill form from the confirmed result. The real (`anthropic`) provider calls a Supabase Edge Function ([`supabase/functions/process-document`](supabase/functions/process-document)) that reads the private document, sends it to Claude for OCR + structured extraction, and returns validated JSON — the vendor API key lives only in that server-side function, never in the app.
+- **Mocked (development only, clearly labeled)**: `src/services/document-processor/mock-provider.ts` — returns deliberately low-confidence sample data so the review flow is exercisable before the Edge Function is deployed / `EXPO_PUBLIC_DOCUMENT_PROCESSOR=anthropic` is set. It is never used outside `__DEV__`.
+- **Not built yet**: the real dashboard numbers (Phase 5), duplicate/receipt matching and recurring-bill logic (Phase 6), notifications (Phase 7). Screens that would otherwise need this data show honest empty states, not sample numbers.
 
 ## Build phases
 
 1. **Foundation** (done) — project structure, navigation, auth, database schema, design system, RTL, dark/light mode.
 2. **Bills** (done) — model, list, details, manual creation/edit, statuses, filters, provider auto-recognition.
 3. **Document upload** (done) — camera, gallery, PDF picker; private Storage upload with content-hash duplicate detection; document viewer (open/share/delete) linked from bills.
-4. OCR + AI — provider interface, structured extraction, classification, confidence, review screen.
+4. **OCR + AI** (done) — provider-agnostic `DocumentProcessor` interface, Claude-powered structured extraction via a Supabase Edge Function, per-field confidence, review/correct screen, bill-form pre-fill.
 5. Dashboard — outstanding total, paid this month, upcoming bills, category spending, charts.
 6. Intelligence — duplicate detection, bill/receipt matching, recurring bills, overdue logic.
 7. Notifications — payment reminders, notification settings.

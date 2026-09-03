@@ -1,3 +1,4 @@
+import { AnthropicDocumentProcessor } from './anthropic-provider';
 import { MockDocumentProcessor } from './mock-provider';
 import type { DocumentProcessor } from './types';
 
@@ -15,6 +16,8 @@ export function getDocumentProcessor(): DocumentProcessor | null {
   const configured = process.env.EXPO_PUBLIC_DOCUMENT_PROCESSOR;
 
   switch (configured) {
+    case 'anthropic':
+      return new AnthropicDocumentProcessor();
     // case 'google-document-ai': return new GoogleDocumentAiProcessor();
     // case 'openai-vision': return new OpenAiVisionProcessor();
     default:
