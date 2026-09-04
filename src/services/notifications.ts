@@ -1,3 +1,4 @@
+import { isRunningInExpoGo } from 'expo';
 import { Platform } from 'react-native';
 
 import type { NotificationType } from '@/types/database';
@@ -11,16 +12,31 @@ const CHANNEL_ID = 'bill-reminders';
 let cachedModule: NotificationsModule | null | undefined;
 
 /**
- * expo-notifications throws as soon as it's touched when running inside
- * Expo Go on Android (SDK 53+ removed that functionality there — a
- * development build is required: https://docs.expo.dev/develop/development-builds/introduction/).
- * A *static* `import` can't be wrapped in try/catch (it's hoisted before any
- * of our code runs), so this loads it dynamically instead, letting every
- * function below degrade to a safe no-op in that environment rather than
- * crashing every screen that imports this file.
+ * expo-notifications throws — for real, not just a console warning — as
+ * soon as it's touched when running inside Expo Go on Android (SDK 53+
+ * removed that functionality there — a development build is required:
+ * https://docs.expo.dev/develop/development-builds/introduction/). The
+ * throw happens inside a side-effecting module (DevicePushTokenAutoRegistration.fx.js)
+ * that runs the instant the module is evaluated — before any of our own
+ * code gets a chance to run — so even wrapping a dynamic `import()` in
+ * try/catch does not reliably catch it (Expo's async-require polyfill for
+ * dynamic import can let a module-evaluation error propagate as an
+ * unhandled exception rather than a rejected promise), which crashed the
+ * whole app back to the Expo Go launcher in testing. The only fully safe
+ * fix is to never import the module at all in that specific environment —
+ * checked here, before the dynamic import, rather than relying on catching
+ * whatever it throws.
  */
+function isNotificationsUnsupportedHere(): boolean {
+  return Platform.OS === 'android' && isRunningInExpoGo();
+}
+
 async function loadNotificationsModule(): Promise<NotificationsModule | null> {
   if (cachedModule !== undefined) return cachedModule;
+  if (isNotificationsUnsupportedHere()) {
+    cachedModule = null;
+    return cachedModule;
+  }
 
   try {
     const mod: NotificationsModule = await import('expo-notifications');
