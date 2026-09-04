@@ -1,5 +1,6 @@
 import { Alert, StyleSheet, View } from 'react-native';
 
+import { NotificationSettingsCard } from '@/components/profile/NotificationSettingsCard';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -51,6 +52,8 @@ export default function ProfileScreen() {
           ))}
         </View>
       </Card>
+
+      <NotificationSettingsCard />
 
       <Button label={t('auth.signOut')} variant="ghost" onPress={signOut} />
     </ScreenContainer>

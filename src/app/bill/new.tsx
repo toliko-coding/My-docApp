@@ -8,9 +8,11 @@ import { useCategories } from '@/hooks/use-categories';
 import { useCreateBill } from '@/hooks/use-bills';
 import { useDocument } from '@/hooks/use-documents';
 import { useDocumentExtraction } from '@/hooks/use-document-extraction';
+import { useUserSettings } from '@/hooks/use-user-settings';
 import { findOrCreateProvider } from '@/repositories/providers.repository';
 import { useAuth } from '@/contexts/auth-context';
 import { emptyBillFormValues, type BillFormValues } from '@/schemas/bill-form.schema';
+import { syncBillReminders } from '@/services/bill-reminders';
 
 export default function NewBillScreen() {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ export default function NewBillScreen() {
   const { data: categories = [] } = useCategories();
   const { data: attachedDocument } = useDocument(documentId);
   const { data: extraction, isLoading: isLoadingExtraction } = useDocumentExtraction(documentId);
+  const { data: settings } = useUserSettings();
   const createBill = useCreateBill();
 
   // BillForm seeds its local state from initialValues only once, on mount —
@@ -56,7 +59,7 @@ export default function NewBillScreen() {
       const category = categories.find((c) => c.id === values.categoryId);
       const provider = await findOrCreateProvider(user!.id, values.providerName, category?.id ?? null);
 
-      await createBill.mutateAsync({
+      const bill = await createBill.mutateAsync({
         provider_id: provider.id,
         category_id: values.categoryId || null,
         document_id: documentId ?? null,
@@ -76,6 +79,20 @@ export default function NewBillScreen() {
         reference_number: values.referenceNumber || null,
         notes: values.notes || null,
       });
+
+      if (settings) {
+        await syncBillReminders({
+          userId: user!.id,
+          billId: bill.id,
+          providerName: values.providerName,
+          amount: bill.amount,
+          currency: bill.currency,
+          dueDate: bill.due_date,
+          status: bill.status,
+          notificationsEnabled: settings.notifications_enabled,
+          reminderDaysBefore: settings.reminder_days_before,
+        });
+      }
 
       // Not router.back(): when reached via Scan -> AI review -> here, back()
       // would land on the (now-stale) review screen instead of the bill list.

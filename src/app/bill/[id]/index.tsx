@@ -9,9 +9,12 @@ import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useBill, useDeleteBill, useMarkBillPaid, useMarkBillUnpaid } from '@/hooks/use-bills';
 import { useDocument } from '@/hooks/use-documents';
+import { useUserSettings } from '@/hooks/use-user-settings';
 import { useTranslation } from '@/i18n';
+import { clearBillReminders, syncBillReminders } from '@/services/bill-reminders';
 import { getEffectiveStatus } from '@/utils/bill-status';
 import { getCategoryName } from '@/utils/category';
 import { formatAmount } from '@/utils/currency';
@@ -20,8 +23,10 @@ import { formatBillingPeriod, formatDate, todayIso } from '@/utils/date';
 export default function BillDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { locale } = useTranslation();
+  const { user } = useAuth();
   const { data: bill, isLoading } = useBill(id);
   const { data: document } = useDocument(bill?.document_id ?? undefined);
+  const { data: settings } = useUserSettings();
   const markPaid = useMarkBillPaid();
   const markUnpaid = useMarkBillUnpaid();
   const deleteBill = useDeleteBill();
@@ -37,12 +42,24 @@ export default function BillDetailScreen() {
   const status = getEffectiveStatus(bill);
   const billingPeriod = formatBillingPeriod(bill.billing_period_start, bill.billing_period_end);
 
-  function handleTogglePaid() {
-    if (status === 'paid') {
-      markUnpaid.mutate(bill!.id);
-    } else {
-      markPaid.mutate({ id: bill!.id, paidDate: todayIso() });
-    }
+  async function handleTogglePaid() {
+    if (!settings) return;
+    const updated =
+      status === 'paid'
+        ? await markUnpaid.mutateAsync(bill!.id)
+        : await markPaid.mutateAsync({ id: bill!.id, paidDate: todayIso() });
+
+    await syncBillReminders({
+      userId: user!.id,
+      billId: updated.id,
+      providerName: bill!.provider?.name ?? '',
+      amount: updated.amount,
+      currency: updated.currency,
+      dueDate: updated.due_date,
+      status: updated.status,
+      notificationsEnabled: settings.notifications_enabled,
+      reminderDaysBefore: settings.reminder_days_before,
+    });
   }
 
   function handleDelete() {
@@ -53,6 +70,7 @@ export default function BillDetailScreen() {
         style: 'destructive',
         onPress: async () => {
           await deleteBill.mutateAsync(bill!.id);
+          await clearBillReminders(bill!.id);
           router.back();
         },
       },

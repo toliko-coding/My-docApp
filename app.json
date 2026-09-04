@@ -41,6 +41,13 @@
           "photosPermission": "DocApp needs access to your photos so you can attach a bill or receipt image.",
           "cameraPermission": "DocApp needs access to your camera so you can scan a bill or receipt."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#3B5BFD"
+        }
       ]
     ],
     "experiments": {
