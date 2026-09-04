@@ -17,7 +17,17 @@ type DotPath<T, Prefix extends string = ''> = {
     ? `${Prefix}${K}`
     : DotPath<T[K], `${Prefix}${K}.`>;
 }[keyof T & string];
-export type TranslationKey = DotPath<Dictionary>;
+
+// Plural keys are stored as separate `_one`/`_other` dictionary entries (see
+// pluralize below), but callers pass the *base* key plus `{ count }` — that
+// base is never itself a literal key in the dictionary, so it has to be
+// derived from the suffixed variants rather than produced by DotPath above.
+type StripPluralSuffix<K extends string> = K extends `${infer Base}_one`
+  ? Base
+  : K extends `${infer Base}_other`
+    ? Base
+    : K;
+export type TranslationKey = StripPluralSuffix<DotPath<Dictionary>>;
 
 function resolve(dict: Dictionary, path: string): string | undefined {
   return path.split('.').reduce<unknown>((acc, key) => {

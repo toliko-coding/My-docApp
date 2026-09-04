@@ -143,14 +143,24 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
             { value: 'unknown', label: 'Unknown' },
           ]}
           value={values.status}
-          onChange={(status) => set('status', status)}
+          onChange={(status) => {
+            setValues((prev) => ({
+              ...prev,
+              status,
+              // The date field shows today as a default the instant Paid is
+              // selected — that default must land in real form state too,
+              // or a submit without ever touching the field fails validation
+              // even though the field visibly already showed a date.
+              paidDate: status === 'paid' && !prev.paidDate ? todayIso() : prev.paidDate,
+            }));
+          }}
         />
       </View>
 
       {values.status === 'paid' ? (
         <DateField
           label="Paid date"
-          value={values.paidDate || todayIso()}
+          value={values.paidDate ?? ''}
           onChange={(v) => set('paidDate', v)}
           error={errors.paidDate}
         />
