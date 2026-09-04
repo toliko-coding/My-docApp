@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert } from 'react-native';
 
 import { BillForm } from '@/components/bills/BillForm';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { useBill, useUpdateBill } from '@/hooks/use-bills';
 import { useUserSettings } from '@/hooks/use-user-settings';
@@ -13,14 +14,18 @@ import { syncBillReminders } from '@/services/bill-reminders';
 export default function EditBillScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
-  const { data: bill, isLoading } = useBill(id);
+  const { data: bill, isLoading, isError, error, refetch } = useBill(id);
   const { data: settings } = useUserSettings();
   const updateBill = useUpdateBill(id!);
 
   if (isLoading || !bill) {
     return (
       <ScreenContainer>
-        <ActivityIndicator />
+        {isError ? (
+          <ErrorState message={error instanceof Error ? error.message : undefined} onRetry={() => refetch()} />
+        ) : (
+          <ActivityIndicator />
+        )}
       </ScreenContainer>
     );
   }

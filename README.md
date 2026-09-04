@@ -90,6 +90,7 @@ npm run web           # web preview
 ```bash
 npm run typecheck     # tsc --noEmit
 npm run lint          # expo lint
+npm test              # jest — unit tests for pure logic (utils, schemas, services)
 ```
 
 ## What's real vs. mocked right now
@@ -107,4 +108,4 @@ npm run lint          # expo lint
 5. **Dashboard** (done) — outstanding balance and remaining-bill count, paid-this-month total, upcoming payments list, and a per-category monthly-spending bar chart, all derived client-side from the same bills already fetched for the Bills tab (no separate aggregate query).
 6. **Intelligence** (done) — an overdue banner on the dashboard; bill/receipt matching and duplicate detection during document review (matches an incoming document against existing bills by provider + amount + billing period/due date, offering "mark existing bill as paid" or "view existing bill" — persisted to `document_matches` for an audit trail); a computed (unstored) recurring-providers insight on the dashboard.
 7. **Notifications** (done) — local payment-reminder scheduling (7/3/1 days before + due-date, configurable per user) built on `expo-notifications`, with a database mirror (`notifications` table) for auditability; a Notification Settings card (enable/disable, choose reminder offsets); reminders kept in sync on bill create/edit/mark-paid/unpaid/delete. Gracefully degrades — with an honest disabled UI state — where `expo-notifications` itself is unavailable (Expo Go on Android, SDK 53+); unaffected on iOS and in development/production builds.
-8. Testing & polish — tests, error/loading states, performance, security review.
+8. **Testing & polish** (done) — a Jest unit-test suite (82 tests) covering the app's pure business logic: date/currency/status formatting, dashboard/recurring-provider aggregation, provider-name normalization, file-validation rules, the bill-form Zod schema (including the paid-date and billing-period cross-field rules), reminder-time scheduling, and the reminder-sync orchestration; an error/loading-state audit that found and fixed two screens (bill detail, bill edit) stuck on an infinite spinner instead of an actionable error on fetch failure; a security review of the RLS policies, storage bucket policies, and the Edge Function's auth handling (no issues found — every table is owner-scoped, the Edge Function runs under the caller's own JWT with no `service_role` use, and no secret ever reaches the client bundle); and a performance check confirming list virtualization (`FlatList`) and dashboard memoization (`useMemo`) were already in place.

@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Spacing } from '@/constants/theme';
@@ -24,7 +25,7 @@ export default function BillDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { locale } = useTranslation();
   const { user } = useAuth();
-  const { data: bill, isLoading } = useBill(id);
+  const { data: bill, isLoading, isError, error, refetch } = useBill(id);
   const { data: document } = useDocument(bill?.document_id ?? undefined);
   const { data: settings } = useUserSettings();
   const markPaid = useMarkBillPaid();
@@ -34,7 +35,11 @@ export default function BillDetailScreen() {
   if (isLoading || !bill) {
     return (
       <ScreenContainer>
-        <ActivityIndicator />
+        {isError ? (
+          <ErrorState message={error instanceof Error ? error.message : undefined} onRetry={() => refetch()} />
+        ) : (
+          <ActivityIndicator />
+        )}
       </ScreenContainer>
     );
   }
