@@ -3,6 +3,8 @@ import { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { CategorySpendingCard } from '@/components/dashboard/CategorySpendingCard';
+import { OverdueBanner } from '@/components/dashboard/OverdueBanner';
+import { RecurringBillsCard } from '@/components/dashboard/RecurringBillsCard';
 import { StatCard, StatCardRow } from '@/components/dashboard/StatCard';
 import { UpcomingPaymentsCard } from '@/components/dashboard/UpcomingPaymentsCard';
 import { ThemedText } from '@/components/themed-text';
@@ -14,6 +16,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useBills } from '@/hooks/use-bills';
 import { useTranslation } from '@/i18n';
 import { computeDashboardStats } from '@/utils/dashboard';
+import { detectRecurringProviders } from '@/utils/recurring';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -22,6 +25,7 @@ export default function HomeScreen() {
 
   const { data: bills, isLoading, isError, error, refetch } = useBills();
   const stats = useMemo(() => computeDashboardStats(bills ?? []), [bills]);
+  const recurringProviders = useMemo(() => detectRecurringProviders(bills ?? []), [bills]);
 
   return (
     <ScreenContainer scroll>
@@ -44,6 +48,14 @@ export default function HomeScreen() {
         />
       ) : (
         <View style={styles.content}>
+          {stats.overdueCount > 0 ? (
+            <OverdueBanner
+              count={stats.overdueCount}
+              total={stats.overdueTotal}
+              onPress={() => router.push('/(tabs)/bills')}
+            />
+          ) : null}
+
           <StatCardRow>
             <StatCard
               label={t('dashboard.outstandingBalance')}
@@ -56,6 +68,8 @@ export default function HomeScreen() {
           <UpcomingPaymentsCard bills={stats.upcomingBills} onPressBill={(id) => router.push(`/bill/${id}`)} />
 
           <CategorySpendingCard categories={stats.categorySpending} />
+
+          <RecurringBillsCard providers={recurringProviders} />
         </View>
       )}
     </ScreenContainer>

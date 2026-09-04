@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AttachedDocumentCard } from '@/components/documents/AttachedDocumentCard';
+import { MatchSuggestionCard } from '@/components/documents/MatchSuggestionCard';
 import { ProviderField } from '@/components/bills/ProviderField';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
@@ -13,12 +14,16 @@ import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { TextField } from '@/components/ui/TextField';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useCategories } from '@/hooks/use-categories';
 import { useDocument } from '@/hooks/use-documents';
 import { useConfirmExtraction, useDocumentExtraction, useProcessDocument } from '@/hooks/use-document-extraction';
+import { useCreateDocumentMatch, usePotentialBillMatches } from '@/hooks/use-document-matches';
+import { useMarkBillPaid } from '@/hooks/use-bills';
 import { CONFIDENCE_THRESHOLD } from '@/schemas/document-extraction.schema';
 import { SUPPORTED_CURRENCIES } from '@/utils/currency';
-import type { DocumentExtraction } from '@/types/database';
+import { todayIso } from '@/utils/date';
+import type { BillWithRelations, DocumentExtraction } from '@/types/database';
 
 interface ReviewValues {
   providerName: string;
@@ -61,11 +66,14 @@ function ConfidenceHint() {
 
 export default function DocumentReviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
   const { data: document } = useDocument(id);
   const { data: categories = [] } = useCategories();
   const { data: extraction, isLoading: isLoadingExtraction } = useDocumentExtraction(id);
   const processDocument = useProcessDocument();
   const confirmExtraction = useConfirmExtraction();
+  const markBillPaid = useMarkBillPaid();
+  const createMatch = useCreateDocumentMatch();
   const triggeredRef = useRef(false);
 
   const [values, setValues] = useState<ReviewValues | null>(null);
@@ -74,6 +82,7 @@ export default function DocumentReviewScreen() {
   // (React's documented pattern for "adjusting state when a value changes"),
   // not in an effect, so it doesn't cause an extra committed render.
   const [seededExtractionId, setSeededExtractionId] = useState<string | null>(null);
+  const [dismissedMatchBillId, setDismissedMatchBillId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id || isLoadingExtraction || triggeredRef.current || extraction) return;
@@ -86,6 +95,20 @@ export default function DocumentReviewScreen() {
     setValues(valuesFromExtraction(extraction));
   }
 
+  const potentialMatches = usePotentialBillMatches(
+    values?.providerId && values.amount.trim()
+      ? {
+          providerId: values.providerId,
+          amount: Number(values.amount),
+          dueDate: values.dueDate || null,
+          billingPeriodStart: values.billingPeriodStart || null,
+          billingPeriodEnd: values.billingPeriodEnd || null,
+        }
+      : null,
+  );
+  const topMatch = (potentialMatches.data ?? []).find((bill) => bill.id !== dismissedMatchBillId);
+  const matchFlavor: 'bill_receipt' | 'duplicate' = extraction?.document_type === 'receipt' ? 'bill_receipt' : 'duplicate';
+
   function handleRetry() {
     if (!id) return;
     processDocument.mutate(id);
@@ -93,6 +116,51 @@ export default function DocumentReviewScreen() {
 
   function handleSkipToManual() {
     router.push({ pathname: '/bill/new', params: { documentId: id } });
+  }
+
+  function matchedFieldsFor(bill: BillWithRelations): Record<string, boolean> {
+    return {
+      provider: true, // guaranteed by the query itself
+      amount: true, // guaranteed by the query itself (within tolerance)
+      billingPeriod: Boolean(
+        values?.billingPeriodStart &&
+          bill.billing_period_start === values.billingPeriodStart &&
+          bill.billing_period_end === values.billingPeriodEnd,
+      ),
+      dueDate: Boolean(values?.dueDate && bill.due_date === values.dueDate),
+    };
+  }
+
+  async function handleMatchPrimaryAction(bill: BillWithRelations) {
+    if (!user || !id) return;
+    await createMatch.mutateAsync({
+      userId: user.id,
+      billId: bill.id,
+      documentId: id,
+      matchType: matchFlavor,
+      confidence: 0.85,
+      matchedFields: matchedFieldsFor(bill),
+      status: 'confirmed',
+    });
+    if (matchFlavor === 'bill_receipt') {
+      await markBillPaid.mutateAsync({ id: bill.id, paidDate: values?.issueDate || todayIso() });
+    }
+    router.push(`/bill/${bill.id}`);
+  }
+
+  async function handleMatchDismiss(bill: BillWithRelations) {
+    if (user && id) {
+      createMatch.mutate({
+        userId: user.id,
+        billId: bill.id,
+        documentId: id,
+        matchType: matchFlavor,
+        confidence: 0.85,
+        matchedFields: matchedFieldsFor(bill),
+        status: 'rejected',
+      });
+    }
+    setDismissedMatchBillId(bill.id);
   }
 
   async function handleConfirm() {
@@ -154,6 +222,16 @@ export default function DocumentReviewScreen() {
       </ThemedText>
 
       {document ? <AttachedDocumentCard document={document} /> : null}
+
+      {topMatch ? (
+        <MatchSuggestionCard
+          bill={topMatch}
+          flavor={matchFlavor}
+          onPrimaryAction={() => handleMatchPrimaryAction(topMatch)}
+          onDismiss={() => handleMatchDismiss(topMatch)}
+          isLoading={createMatch.isPending || markBillPaid.isPending}
+        />
+      ) : null}
 
       <View>
         <ProviderField

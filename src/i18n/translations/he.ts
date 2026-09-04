@@ -41,6 +41,11 @@ const he: typeof en = {
     monthlySpending: 'הוצאות החודש',
     categories: 'קטגוריות',
     dueOn: 'לתשלום עד {{date}}',
+    overdueBills_one: 'חשבון אחד באיחור',
+    overdueBills_other: '{{count}} חשבונות באיחור',
+    recurringBills: 'חשבונות קבועים',
+    recurringBillsSubtitle: 'ספקים שאתם משלמים באופן קבוע',
+    aboutEveryMonth: 'בערך כל {{days}} ימים',
   },
   emptyStates: {
     noBillsTitle: 'עדיין אין חשבונות',

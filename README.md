@@ -96,7 +96,7 @@ npm run lint          # expo lint
 
 - **Real**: navigation, theming (light/dark), RTL + Hebrew/English i18n, Supabase-backed auth (once `.env` is set), database schema with Row Level Security. Full bills CRUD (create/edit/delete, mark paid/unpaid, filters, provider auto-suggest/learning, categories). Document capture and storage: camera, gallery, and PDF pickers; upload to a private Supabase Storage bucket with signed-URL viewing, SHA-256 content-hash duplicate detection, and a document viewer (open/share/download/delete) linked from a bill's detail screen. AI document extraction: after upload, a review screen runs the configured `DocumentProcessor`, shows the extracted provider/category/amount/dates with a per-field confidence flag ("AI wasn't sure — please check"), lets the user correct anything before confirming, and pre-fills the Add Bill form from the confirmed result. The real (`anthropic`) provider calls a Supabase Edge Function ([`supabase/functions/process-document`](supabase/functions/process-document)) that reads the private document, sends it to Claude for OCR + structured extraction, and returns validated JSON — the vendor API key lives only in that server-side function, never in the app.
 - **Mocked (development only, clearly labeled)**: `src/services/document-processor/mock-provider.ts` — returns deliberately low-confidence sample data so the review flow is exercisable before the Edge Function is deployed / `EXPO_PUBLIC_DOCUMENT_PROCESSOR=anthropic` is set. It is never used outside `__DEV__`.
-- **Not built yet**: duplicate/receipt matching and recurring-bill logic (Phase 6), notifications (Phase 7). Screens that would otherwise need this data show honest empty states, not sample numbers.
+- **Not built yet**: notifications (Phase 7). Screens that would otherwise need this data show honest empty states, not sample numbers.
 
 ## Build phases
 
@@ -105,6 +105,6 @@ npm run lint          # expo lint
 3. **Document upload** (done) — camera, gallery, PDF picker; private Storage upload with content-hash duplicate detection; document viewer (open/share/delete) linked from bills.
 4. **OCR + AI** (done) — provider-agnostic `DocumentProcessor` interface, Claude-powered structured extraction via a Supabase Edge Function, per-field confidence, review/correct screen, bill-form pre-fill.
 5. **Dashboard** (done) — outstanding balance and remaining-bill count, paid-this-month total, upcoming payments list, and a per-category monthly-spending bar chart, all derived client-side from the same bills already fetched for the Bills tab (no separate aggregate query).
-6. Intelligence — duplicate detection, bill/receipt matching, recurring bills, overdue logic.
+6. **Intelligence** (done) — an overdue banner on the dashboard; bill/receipt matching and duplicate detection during document review (matches an incoming document against existing bills by provider + amount + billing period/due date, offering "mark existing bill as paid" or "view existing bill" — persisted to `document_matches` for an audit trail); a computed (unstored) recurring-providers insight on the dashboard.
 7. Notifications — payment reminders, notification settings.
 8. Testing & polish — tests, error/loading states, performance, security review.

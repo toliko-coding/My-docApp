@@ -39,6 +39,11 @@ const en = {
     monthlySpending: 'Monthly Spending',
     categories: 'Categories',
     dueOn: 'Due {{date}}',
+    overdueBills_one: '{{count}} bill overdue',
+    overdueBills_other: '{{count}} bills overdue',
+    recurringBills: 'Recurring Bills',
+    recurringBillsSubtitle: 'Providers you pay regularly',
+    aboutEveryMonth: 'About every {{days}} days',
   },
   emptyStates: {
     noBillsTitle: 'No bills yet',

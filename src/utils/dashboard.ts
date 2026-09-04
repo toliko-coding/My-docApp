@@ -13,6 +13,8 @@ export interface CategorySpending {
 export interface DashboardStats {
   outstandingTotal: number;
   outstandingCount: number;
+  overdueTotal: number;
+  overdueCount: number;
   paidThisMonthTotal: number;
   upcomingBills: BillWithRelations[];
   categorySpending: CategorySpending[];
@@ -35,13 +37,20 @@ export function computeDashboardStats(bills: BillWithRelations[]): DashboardStat
 
   let outstandingTotal = 0;
   let outstandingCount = 0;
+  let overdueTotal = 0;
+  let overdueCount = 0;
   let paidThisMonthTotal = 0;
   const categoryTotals = new Map<string, CategorySpending>();
 
   for (const bill of bills) {
-    if (getEffectiveStatus(bill) !== 'paid') {
+    const effectiveStatus = getEffectiveStatus(bill);
+    if (effectiveStatus !== 'paid') {
       outstandingTotal += bill.amount;
       outstandingCount += 1;
+    }
+    if (effectiveStatus === 'overdue') {
+      overdueTotal += bill.amount;
+      overdueCount += 1;
     }
 
     if (bill.status === 'paid' && bill.paid_date?.startsWith(currentMonth)) {
@@ -70,5 +79,13 @@ export function computeDashboardStats(bills: BillWithRelations[]): DashboardStat
 
   const categorySpending = Array.from(categoryTotals.values()).sort((a, b) => b.amount - a.amount);
 
-  return { outstandingTotal, outstandingCount, paidThisMonthTotal, upcomingBills, categorySpending };
+  return {
+    outstandingTotal,
+    outstandingCount,
+    overdueTotal,
+    overdueCount,
+    paidThisMonthTotal,
+    upcomingBills,
+    categorySpending,
+  };
 }
