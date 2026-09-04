@@ -196,7 +196,11 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: Deno.env.get('ANTHROPIC_MODEL') || DEFAULT_MODEL,
-        max_tokens: 2048,
+        // Generous headroom: a dense multi-page bill's rawText transcription
+        // alone can run well past 1000 tokens, and a truncated tool-call
+        // response (cut off mid-JSON) surfaces as an all-fields-empty result
+        // rather than a clear error.
+        max_tokens: 8192,
         tools: [EXTRACTION_TOOL],
         tool_choice: { type: 'tool', name: EXTRACTION_TOOL.name },
         messages: [
@@ -213,9 +217,14 @@ Deno.serve(async (req) => {
                   '(under 0.5) whenever the text is blurry, ambiguous, or you are guessing/inferring rather than ' +
                   'reading it directly. Only use a category key from the enum provided; if nothing fits well, ' +
                   'use "other". Amounts must be plain numbers (no currency symbols or thousands separators). ' +
-                  'All dates must be ISO YYYY-MM-DD. Leave a field out entirely if it does not appear on the ' +
-                  'document at all — do not guess a value just to fill it in. Always fill rawText with a full ' +
-                  'transcription of the document’s visible text.',
+                  'All dates must be ISO YYYY-MM-DD, converted from whatever format the document uses (Israeli ' +
+                  'documents commonly use DD/MM/YYYY or DD.MM.YYYY). Leave a field out entirely only if the ' +
+                  'document truly has nothing that corresponds to it — a bill almost always has *some* due date, ' +
+                  'even if it is not labeled "due date" literally, so look for its local-language equivalent ' +
+                  'before leaving dueDate empty. In Hebrew documents specifically: issueDate is the date the ' +
+                  'document itself was produced (look for תאריך הפקה, תאריך עריכת החשבון, or תאריך הדפסה); dueDate ' +
+                  'is the final date to pay (look for תאריך לתשלום, תאריך אחרון לתשלום, or לתשלום עד). Always fill ' +
+                  'rawText with a full transcription of the document’s visible text.',
               },
             ],
           },
@@ -229,6 +238,14 @@ Deno.serve(async (req) => {
     }
 
     const anthropicResult = await anthropicResponse.json();
+
+    // A response cut off mid-tool-call otherwise looks like a normal,
+    // successful — but all-fields-empty — extraction, which is much more
+    // confusing to debug than a clear error.
+    if (anthropicResult.stop_reason === 'max_tokens') {
+      return jsonResponse({ error: 'The AI response was cut off before finishing (max_tokens reached). Please retry.' }, 502);
+    }
+
     const toolUseBlock = (anthropicResult.content ?? []).find(
       (block: { type: string }) => block.type === 'tool_use',
     );
