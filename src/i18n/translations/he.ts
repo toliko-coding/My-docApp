@@ -129,6 +129,9 @@ const he: typeof en = {
     filterAll: 'הכול',
     filterPartial: 'חלקי',
     allCategories: 'כל הקטגוריות',
+    addBillScan: 'סריקה',
+    addBillUpload: 'העלאה',
+    addBillManual: 'הזנה ידנית',
   },
   billDetail: {
     title: 'פרטי חשבון',

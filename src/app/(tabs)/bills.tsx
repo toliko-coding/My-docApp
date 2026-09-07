@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { AddBillMenu } from '@/components/bills/AddBillMenu';
 import { BillListItem } from '@/components/bills/BillListItem';
 import { ThemedText } from '@/components/themed-text';
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
@@ -32,6 +33,7 @@ export default function BillsScreen() {
   const [statusFilter, setStatusFilter] = useState<BillStatus | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
 
   const { data: categories = [] } = useCategories();
   const { data: bills, isLoading, isError, error, refetch } = useBills({
@@ -48,11 +50,19 @@ export default function BillsScreen() {
         </ThemedText>
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push('/bill/new')}
+          onPress={() => setIsAddMenuOpen(true)}
           style={[styles.addButton, { backgroundColor: theme.primary }]}>
           <Ionicons name="add" size={22} color={theme.primaryText} />
         </Pressable>
       </View>
+
+      <AddBillMenu
+        visible={isAddMenuOpen}
+        onClose={() => setIsAddMenuOpen(false)}
+        onScan={() => router.push({ pathname: '/(tabs)/scan', params: { action: 'camera' } })}
+        onUpload={() => router.push({ pathname: '/(tabs)/scan', params: { action: 'upload' } })}
+        onManual={() => router.push('/bill/new')}
+      />
 
       <TextField placeholder={t('bills.searchPlaceholder')} value={search} onChangeText={setSearch} style={styles.search} />
 

@@ -2,8 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
@@ -36,6 +36,7 @@ async function normalizeAsset(
 export default function ScanScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { action } = useLocalSearchParams<{ action?: string }>();
   const uploadDocument = useUploadDocument();
   const [pickedFile, setPickedFile] = useState<PickedFile | null>(null);
 
@@ -72,6 +73,34 @@ export default function ScanScreen() {
     const asset = result.assets[0];
     setPickedFile(await normalizeAsset(asset.uri, asset.name, asset.mimeType ?? 'application/pdf', asset.size, 'pdf'));
   }
+
+  // Unified "Upload" entry point (the Bills tab's + menu) — the system file
+  // picker itself lets the user browse photos or PDFs from one place, so
+  // there's no need to ask gallery-vs-PDF as a separate app-level step.
+  async function handlePickAnyFile() {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['image/*', 'application/pdf'],
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    const mimeType = asset.mimeType ?? guessMimeTypeFromUri(asset.uri);
+    const source: DocumentSource = mimeType === 'application/pdf' ? 'pdf' : 'gallery';
+    setPickedFile(await normalizeAsset(asset.uri, asset.name, mimeType, asset.size, source));
+  }
+
+  // Reached from the Bills tab's "+" menu, which skips this screen's own
+  // picker grid and jumps straight to the requested picker.
+  const triggeredActionRef = useRef(false);
+  useEffect(() => {
+    if (triggeredActionRef.current || !action) return;
+    triggeredActionRef.current = true;
+    (async () => {
+      if (action === 'camera') await handleTakePhoto();
+      else if (action === 'upload') await handlePickAnyFile();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [action]);
 
   const options: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => Promise<void> }[] = [
     { icon: 'camera', label: t('scan.takePhoto'), onPress: handleTakePhoto },

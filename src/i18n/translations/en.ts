@@ -128,6 +128,9 @@ const en = {
     filterAll: 'All',
     filterPartial: 'Partial',
     allCategories: 'All categories',
+    addBillScan: 'Scan',
+    addBillUpload: 'Upload',
+    addBillManual: 'Enter Manually',
   },
   billDetail: {
     title: 'Bill Details',
