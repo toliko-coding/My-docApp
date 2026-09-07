@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "My-docApp",
+    "name": "Tiyuk",
     "slug": "My-docApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,9 +8,11 @@
     "scheme": "mydocapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.tolikocoding.tiyuk"
     },
     "android": {
+      "package": "com.tolikocoding.tiyuk",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -37,8 +39,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "DocApp needs access to your photos so you can attach a bill or receipt image.",
-          "cameraPermission": "DocApp needs access to your camera so you can scan a bill or receipt."
+          "photosPermission": "Tiyuk needs access to your photos so you can attach a bill or receipt image.",
+          "cameraPermission": "Tiyuk needs access to your camera so you can scan a bill or receipt."
         }
       ],
       [

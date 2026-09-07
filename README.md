@@ -1,4 +1,4 @@
-# DocApp
+# Tiyuk
 
 [![CI](https://github.com/toliko-coding/My-docApp/actions/workflows/ci.yml/badge.svg)](https://github.com/toliko-coding/My-docApp/actions/workflows/ci.yml)
 
