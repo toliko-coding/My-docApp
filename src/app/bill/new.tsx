@@ -8,25 +8,30 @@ import { useCategories } from '@/hooks/use-categories';
 import { useCreateBill } from '@/hooks/use-bills';
 import { useDocument } from '@/hooks/use-documents';
 import { useDocumentExtraction } from '@/hooks/use-document-extraction';
+import { useProfile } from '@/hooks/use-profile';
 import { useUserSettings } from '@/hooks/use-user-settings';
 import { findOrCreateProvider } from '@/repositories/providers.repository';
 import { useAuth } from '@/contexts/auth-context';
+import { useTranslation } from '@/i18n';
 import { emptyBillFormValues, type BillFormValues } from '@/schemas/bill-form.schema';
 import { syncBillReminders } from '@/services/bill-reminders';
 
 export default function NewBillScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { documentId } = useLocalSearchParams<{ documentId?: string }>();
   const { data: categories = [] } = useCategories();
   const { data: attachedDocument } = useDocument(documentId);
   const { data: extraction, isLoading: isLoadingExtraction } = useDocumentExtraction(documentId);
   const { data: settings } = useUserSettings();
+  const { data: profile, isLoading: isLoadingProfile } = useProfile();
   const createBill = useCreateBill();
 
   // BillForm seeds its local state from initialValues only once, on mount —
-  // so we must know whether a confirmed AI extraction exists *before*
-  // rendering it, the same way edit.tsx waits for the bill to load first.
-  if (documentId && isLoadingExtraction) {
+  // so we must know whether a confirmed AI extraction exists (and the
+  // user's default currency) *before* rendering it, the same way edit.tsx
+  // waits for the bill to load first.
+  if ((documentId && isLoadingExtraction) || isLoadingProfile) {
     return (
       <ScreenContainer>
         <ActivityIndicator />
@@ -37,12 +42,13 @@ export default function NewBillScreen() {
   // Only prefill from a confirmed AI review — a pending/unreviewed extraction
   // (e.g. the user tapped "Enter manually instead") is never shown as fact.
   const confirmed = extraction?.review_status === 'confirmed' ? extraction : null;
+  const defaultCurrency = profile?.currency ?? emptyBillFormValues.currency;
   const initialValues: Partial<BillFormValues> | undefined = confirmed
     ? {
         providerName: confirmed.provider_name_raw ?? emptyBillFormValues.providerName,
         categoryId: confirmed.category_id ?? emptyBillFormValues.categoryId,
         amount: confirmed.amount != null ? String(confirmed.amount) : emptyBillFormValues.amount,
-        currency: confirmed.currency ?? emptyBillFormValues.currency,
+        currency: confirmed.currency ?? defaultCurrency,
         issueDate: confirmed.issue_date ?? emptyBillFormValues.issueDate,
         dueDate: confirmed.due_date ?? emptyBillFormValues.dueDate,
         billingPeriodStart: confirmed.billing_period_start ?? emptyBillFormValues.billingPeriodStart,
@@ -52,7 +58,7 @@ export default function NewBillScreen() {
         referenceNumber: confirmed.reference_number ?? emptyBillFormValues.referenceNumber,
         paymentMethod: confirmed.payment_method ?? emptyBillFormValues.paymentMethod,
       }
-    : undefined;
+    : { currency: defaultCurrency };
 
   async function handleSubmit(values: BillFormValues) {
     try {
@@ -98,7 +104,7 @@ export default function NewBillScreen() {
       // would land on the (now-stale) review screen instead of the bill list.
       router.dismissTo('/(tabs)/bills');
     } catch (error) {
-      Alert.alert('Could not save bill', error instanceof Error ? error.message : 'Please try again.');
+      Alert.alert(t('billForm.saveErrorTitle'), error instanceof Error ? error.message : t('billForm.tryAgain'));
     }
   }
 
@@ -108,7 +114,7 @@ export default function NewBillScreen() {
       <BillForm
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        submitLabel="Add Bill"
+        submitLabel={t('billForm.addBillTitle')}
         isSubmitting={createBill.isPending}
       />
     </ScreenContainer>

@@ -1,9 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, renderWithProviders, screen } from '@/test-utils/render';
 
 import { BillForm } from '@/components/bills/BillForm';
 import { useCategories } from '@/hooks/use-categories';
 import { useProviderSearch } from '@/hooks/use-providers';
-import { I18nProvider } from '@/i18n';
 import type { BillFormValues } from '@/schemas/bill-form.schema';
 import { makeCategory } from '@/test-utils/fixtures';
 
@@ -20,11 +19,7 @@ const water = makeCategory({ id: 'cat-water', key: 'water', name_en: 'Water', na
 
 function renderForm(props: Partial<React.ComponentProps<typeof BillForm>> = {}) {
   const onSubmit = jest.fn();
-  render(
-    <I18nProvider>
-      <BillForm onSubmit={onSubmit} submitLabel="Save" {...props} />
-    </I18nProvider>,
-  );
+  renderWithProviders(<BillForm onSubmit={onSubmit} submitLabel="Save" {...props} />);
   return { onSubmit };
 }
 

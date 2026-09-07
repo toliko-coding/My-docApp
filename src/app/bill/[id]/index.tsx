@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useBill, useDeleteBill, useMarkBillPaid, useMarkBillUnpaid } from '@/hooks/use-bills';
 import { useDocument } from '@/hooks/use-documents';
 import { useUserSettings } from '@/hooks/use-user-settings';
-import { useTranslation } from '@/i18n';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { clearBillReminders, syncBillReminders } from '@/services/bill-reminders';
 import { getEffectiveStatus } from '@/utils/bill-status';
 import { getCategoryName } from '@/utils/category';
@@ -23,7 +23,7 @@ import { formatBillingPeriod, formatDate, todayIso } from '@/utils/date';
 
 export default function BillDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const { user } = useAuth();
   const { data: bill, isLoading, isError, error, refetch } = useBill(id);
   const { data: document } = useDocument(bill?.document_id ?? undefined);
@@ -45,7 +45,7 @@ export default function BillDetailScreen() {
   }
 
   const status = getEffectiveStatus(bill);
-  const billingPeriod = formatBillingPeriod(bill.billing_period_start, bill.billing_period_end);
+  const billingPeriod = formatBillingPeriod(bill.billing_period_start, bill.billing_period_end, locale);
 
   async function handleTogglePaid() {
     if (!settings) return;
@@ -68,10 +68,10 @@ export default function BillDetailScreen() {
   }
 
   function handleDelete() {
-    Alert.alert('Delete bill', 'This removes the bill record. This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('billDetail.deleteConfirmTitle'), t('billDetail.deleteConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteBill.mutateAsync(bill!.id);
@@ -90,7 +90,7 @@ export default function BillDetailScreen() {
         </View>
         <View style={styles.headerText}>
           <ThemedText type="title" style={styles.providerName} numberOfLines={2}>
-            {bill.provider?.name ?? 'Unknown provider'}
+            {bill.provider?.name ?? t('common.unknownProvider')}
           </ThemedText>
           <ThemedText themeColor="textSecondary">
             {bill.category ? getCategoryName(bill.category, locale) : '—'}
@@ -101,20 +101,24 @@ export default function BillDetailScreen() {
 
       <Card style={styles.amountCard}>
         <ThemedText themeColor="textSecondary" type="small">
-          Amount
+          {t('billFields.amount')}
         </ThemedText>
         <ThemedText style={styles.amount}>{formatAmount(bill.amount, bill.currency)}</ThemedText>
       </Card>
 
       <Card style={styles.detailsCard}>
-        <DetailRow label="Issue date" value={formatDate(bill.issue_date)} />
-        <DetailRow label="Due date" value={formatDate(bill.due_date)} />
-        {billingPeriod ? <DetailRow label="Billing period" value={billingPeriod} /> : null}
-        {bill.paid_date ? <DetailRow label="Paid date" value={formatDate(bill.paid_date)} /> : null}
-        {bill.payment_method ? <DetailRow label="Payment method" value={bill.payment_method} /> : null}
-        {bill.invoice_number ? <DetailRow label="Invoice number" value={bill.invoice_number} /> : null}
-        {bill.customer_number ? <DetailRow label="Customer number" value={bill.customer_number} /> : null}
-        {bill.reference_number ? <DetailRow label="Reference number" value={bill.reference_number} /> : null}
+        <DetailRow labelKey="billFields.issueDate" value={formatDate(bill.issue_date)} />
+        <DetailRow labelKey="billFields.dueDate" value={formatDate(bill.due_date)} />
+        {billingPeriod ? <DetailRow labelKey="billFields.billingPeriod" value={billingPeriod} /> : null}
+        {bill.paid_date ? <DetailRow labelKey="billFields.paidDate" value={formatDate(bill.paid_date)} /> : null}
+        {bill.payment_method ? <DetailRow labelKey="billFields.paymentMethod" value={bill.payment_method} /> : null}
+        {bill.invoice_number ? <DetailRow labelKey="billFields.invoiceNumber" value={bill.invoice_number} /> : null}
+        {bill.customer_number ? (
+          <DetailRow labelKey="billFields.customerNumber" value={bill.customer_number} />
+        ) : null}
+        {bill.reference_number ? (
+          <DetailRow labelKey="billFields.referenceNumber" value={bill.reference_number} />
+        ) : null}
       </Card>
 
       {document ? (
@@ -124,7 +128,7 @@ export default function BillDetailScreen() {
       {bill.notes ? (
         <Card>
           <ThemedText themeColor="textSecondary" type="small">
-            Notes
+            {t('billFields.notes')}
           </ThemedText>
           <ThemedText style={styles.notes}>{bill.notes}</ThemedText>
         </Card>
@@ -132,21 +136,22 @@ export default function BillDetailScreen() {
 
       <View style={styles.actions}>
         <Button
-          label={status === 'paid' ? 'Mark as Unpaid' : 'Mark as Paid'}
+          label={status === 'paid' ? t('billDetail.markAsUnpaid') : t('billDetail.markAsPaid')}
           onPress={handleTogglePaid}
           loading={markPaid.isPending || markUnpaid.isPending}
         />
-        <Button label="Edit" variant="secondary" onPress={() => router.push(`/bill/${bill.id}/edit`)} />
-        <Button label="Delete" variant="ghost" onPress={handleDelete} />
+        <Button label={t('common.edit')} variant="secondary" onPress={() => router.push(`/bill/${bill.id}/edit`)} />
+        <Button label={t('common.delete')} variant="ghost" onPress={handleDelete} />
       </View>
     </ScreenContainer>
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ labelKey, value }: { labelKey: TranslationKey; value: string }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.detailRow}>
-      <ThemedText themeColor="textSecondary">{label}</ThemedText>
+      <ThemedText themeColor="textSecondary">{t(labelKey)}</ThemedText>
       <ThemedText>{value}</ThemedText>
     </View>
   );

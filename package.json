@@ -66,18 +66,23 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest --forceExit"
   },
   "private": true,
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
       "\\.css$": "<rootDir>/src/test-utils/style-mock.js",
+      "^@react-native-async-storage/async-storage$": "<rootDir>/node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.js",
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "testPathIgnorePatterns": [
       "/node_modules/",
       "<rootDir>/supabase/functions/"
+    ],
+    "setupFiles": [
+      "<rootDir>/node_modules/jest-expo/src/preset/setup.js",
+      "<rootDir>/src/test-utils/jest.setup.js"
     ],
     "transformIgnorePatterns": [
       "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|lucide-react-native))",

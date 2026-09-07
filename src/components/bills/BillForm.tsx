@@ -10,6 +10,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { TextField } from '@/components/ui/TextField';
 import { Spacing } from '@/constants/theme';
 import { useCategories } from '@/hooks/use-categories';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { billFormSchema, emptyBillFormValues, type BillFormValues } from '@/schemas/bill-form.schema';
 import { SUPPORTED_CURRENCIES } from '@/utils/currency';
 import { todayIso } from '@/utils/date';
@@ -21,7 +22,21 @@ interface BillFormProps {
   isSubmitting?: boolean;
 }
 
+// billFormSchema's Zod messages are internal identifiers, not display text —
+// keeping the schema itself locale-agnostic means it can be unit-tested
+// without an I18nProvider, and translation only happens here at the one
+// place these errors are actually shown to a user.
+const FIELD_ERROR_KEYS: Record<string, TranslationKey> = {
+  'Provider is required': 'billForm.providerRequired',
+  'Category is required': 'billForm.categoryRequired',
+  'Amount is required': 'billForm.amountRequired',
+  'Enter a valid amount': 'billForm.amountInvalid',
+  'Billing period needs both a start and an end date': 'billForm.billingPeriodIncomplete',
+  'Paid date is required when status is Paid': 'billForm.paidDateRequired',
+};
+
 export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }: BillFormProps) {
+  const { t } = useTranslation();
   const { data: categories = [], isError: categoriesError, refetch: refetchCategories } = useCategories();
   const [values, setValues] = useState<BillFormValues>({ ...emptyBillFormValues, ...initialValues });
   const [errors, setErrors] = useState<Partial<Record<keyof BillFormValues, string>>>({});
@@ -36,7 +51,8 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
       const fieldErrors: Partial<Record<keyof BillFormValues, string>> = {};
       for (const issue of result.error.issues) {
         const key = issue.path[0] as keyof BillFormValues;
-        if (!fieldErrors[key]) fieldErrors[key] = issue.message;
+        const translationKey = FIELD_ERROR_KEYS[issue.message];
+        if (!fieldErrors[key]) fieldErrors[key] = translationKey ? t(translationKey) : issue.message;
       }
       setErrors(fieldErrors);
       return;
@@ -48,7 +64,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
   return (
     <View style={styles.form}>
       <ProviderField
-        label="Provider"
+        label={t('billFields.provider')}
         value={values.providerName}
         onChangeText={(text) => set('providerName', text)}
         onSelectProvider={(provider) => {
@@ -62,12 +78,12 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
 
       <View>
         <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
-          Category
+          {t('billFields.category')}
         </ThemedText>
         {categoriesError ? (
           <Pressable accessibilityRole="button" onPress={() => refetchCategories()}>
             <ThemedText type="small" themeColor="danger">
-              Couldn&rsquo;t load categories — tap to retry
+              {t('billFields.categoryLoadError')}
             </ThemedText>
           </Pressable>
         ) : (
@@ -83,7 +99,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
       <View style={styles.row}>
         <View style={styles.amountField}>
           <TextField
-            label="Amount"
+            label={t('billFields.amount')}
             value={values.amount}
             onChangeText={(text) => set('amount', text)}
             keyboardType="decimal-pad"
@@ -92,7 +108,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
         </View>
         <View style={styles.currencyField}>
           <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
-            Currency
+            {t('billFields.currency')}
           </ThemedText>
           <SegmentedControl
             options={SUPPORTED_CURRENCIES.map((code) => ({ value: code, label: code }))}
@@ -104,17 +120,27 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
 
       <View style={styles.row}>
         <View style={styles.flexItem}>
-          <DateField label="Issue date" value={values.issueDate ?? ''} onChange={(v) => set('issueDate', v)} onClear={() => set('issueDate', '')} />
+          <DateField
+            label={t('billFields.issueDate')}
+            value={values.issueDate ?? ''}
+            onChange={(v) => set('issueDate', v)}
+            onClear={() => set('issueDate', '')}
+          />
         </View>
         <View style={styles.flexItem}>
-          <DateField label="Due date" value={values.dueDate ?? ''} onChange={(v) => set('dueDate', v)} onClear={() => set('dueDate', '')} />
+          <DateField
+            label={t('billFields.dueDate')}
+            value={values.dueDate ?? ''}
+            onChange={(v) => set('dueDate', v)}
+            onClear={() => set('dueDate', '')}
+          />
         </View>
       </View>
 
       <View style={styles.row}>
         <View style={styles.flexItem}>
           <DateField
-            label="Billing period start"
+            label={t('billFields.billingPeriodStart')}
             value={values.billingPeriodStart ?? ''}
             onChange={(v) => set('billingPeriodStart', v)}
             onClear={() => set('billingPeriodStart', '')}
@@ -123,7 +149,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
         </View>
         <View style={styles.flexItem}>
           <DateField
-            label="Billing period end"
+            label={t('billFields.billingPeriodEnd')}
             value={values.billingPeriodEnd ?? ''}
             onChange={(v) => set('billingPeriodEnd', v)}
             onClear={() => set('billingPeriodEnd', '')}
@@ -133,14 +159,14 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
 
       <View>
         <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
-          Status
+          {t('billFields.status')}
         </ThemedText>
         <SegmentedControl
           options={[
-            { value: 'pending', label: 'Pending' },
-            { value: 'paid', label: 'Paid' },
-            { value: 'partially_paid', label: 'Partial' },
-            { value: 'unknown', label: 'Unknown' },
+            { value: 'pending', label: t('status.pending') },
+            { value: 'paid', label: t('status.paid') },
+            { value: 'partially_paid', label: t('status.partially_paid') },
+            { value: 'unknown', label: t('status.unknown') },
           ]}
           value={values.status}
           onChange={(status) => {
@@ -159,7 +185,7 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
 
       {values.status === 'paid' ? (
         <DateField
-          label="Paid date"
+          label={t('billFields.paidDate')}
           value={values.paidDate ?? ''}
           onChange={(v) => set('paidDate', v)}
           error={errors.paidDate}
@@ -167,17 +193,17 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
       ) : null}
 
       <ThemedText type="smallBold" style={styles.sectionTitle}>
-        Additional details
+        {t('billForm.additionalDetails')}
       </ThemedText>
 
       <View style={styles.row}>
         <TextField
-          label="Invoice number"
+          label={t('billFields.invoiceNumber')}
           value={values.invoiceNumber}
           onChangeText={(text) => set('invoiceNumber', text)}
         />
         <TextField
-          label="Customer number"
+          label={t('billFields.customerNumber')}
           value={values.customerNumber}
           onChangeText={(text) => set('customerNumber', text)}
         />
@@ -185,19 +211,19 @@ export function BillForm({ initialValues, onSubmit, submitLabel, isSubmitting }:
 
       <View style={styles.row}>
         <TextField
-          label="Payment method"
+          label={t('billFields.paymentMethod')}
           value={values.paymentMethod}
           onChangeText={(text) => set('paymentMethod', text)}
         />
         <TextField
-          label="Reference number"
+          label={t('billFields.referenceNumber')}
           value={values.referenceNumber}
           onChangeText={(text) => set('referenceNumber', text)}
         />
       </View>
 
       <TextField
-        label="Notes"
+        label={t('billFields.notes')}
         value={values.notes}
         onChangeText={(text) => set('notes', text)}
         multiline

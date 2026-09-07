@@ -20,6 +20,7 @@ import { useDocument } from '@/hooks/use-documents';
 import { useConfirmExtraction, useDocumentExtraction, useProcessDocument } from '@/hooks/use-document-extraction';
 import { useCreateDocumentMatch, usePotentialBillMatches } from '@/hooks/use-document-matches';
 import { useMarkBillPaid } from '@/hooks/use-bills';
+import { useTranslation } from '@/i18n';
 import { CONFIDENCE_THRESHOLD } from '@/schemas/document-extraction.schema';
 import { SUPPORTED_CURRENCIES } from '@/utils/currency';
 import { todayIso } from '@/utils/date';
@@ -57,15 +58,17 @@ function isLowConfidence(hasValue: boolean, confidence: number | undefined): boo
 }
 
 function ConfidenceHint() {
+  const { t } = useTranslation();
   return (
     <ThemedText type="small" themeColor="warning">
-      AI wasn&apos;t sure about this — please check it.
+      {t('documentReview.confidenceHint')}
     </ThemedText>
   );
 }
 
 export default function DocumentReviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: document } = useDocument(id);
   const { data: categories = [] } = useCategories();
@@ -186,10 +189,14 @@ export default function DocumentReviewScreen() {
     return (
       <ScreenContainer>
         <ErrorState
-          message={processDocument.error instanceof Error ? processDocument.error.message : 'Could not read this document.'}
+          message={
+            processDocument.error instanceof Error
+              ? processDocument.error.message
+              : t('documentReview.processingErrorFallback')
+          }
           onRetry={handleRetry}
         />
-        <Button label="Enter details manually instead" variant="ghost" onPress={handleSkipToManual} />
+        <Button label={t('documentReview.enterManuallyFromError')} variant="ghost" onPress={handleSkipToManual} />
       </ScreenContainer>
     );
   }
@@ -200,10 +207,10 @@ export default function DocumentReviewScreen() {
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" />
           <ThemedText type="subtitle" style={styles.loadingTitle}>
-            Reading your document…
+            {t('documentReview.readingTitle')}
           </ThemedText>
           <ThemedText themeColor="textSecondary" style={styles.loadingSubtitle}>
-            AI is picking out the provider, amount, and dates. This takes a few seconds.
+            {t('documentReview.readingSubtitle')}
           </ThemedText>
         </View>
       </ScreenContainer>
@@ -215,11 +222,9 @@ export default function DocumentReviewScreen() {
   return (
     <ScreenContainer scroll>
       <ThemedText type="title" style={styles.title}>
-        Review the details
+        {t('documentReview.title')}
       </ThemedText>
-      <ThemedText themeColor="textSecondary">
-        Here&apos;s what the AI found. Fix anything that looks wrong before saving.
-      </ThemedText>
+      <ThemedText themeColor="textSecondary">{t('documentReview.subtitle')}</ThemedText>
 
       {document ? <AttachedDocumentCard document={document} /> : null}
 
@@ -235,7 +240,7 @@ export default function DocumentReviewScreen() {
 
       <View>
         <ProviderField
-          label="Provider"
+          label={t('billFields.provider')}
           value={values.providerName}
           onChangeText={(text) => setValues((v) => (v ? { ...v, providerName: text, providerId: null } : v))}
           onSelectProvider={(provider) =>
@@ -247,7 +252,7 @@ export default function DocumentReviewScreen() {
 
       <View>
         <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
-          Category
+          {t('billFields.category')}
         </ThemedText>
         <CategoryPicker
           categories={categories}
@@ -260,7 +265,7 @@ export default function DocumentReviewScreen() {
       <View style={styles.row}>
         <View style={styles.amountField}>
           <TextField
-            label="Amount"
+            label={t('billFields.amount')}
             value={values.amount}
             onChangeText={(text) => setValues((v) => (v ? { ...v, amount: text } : v))}
             keyboardType="decimal-pad"
@@ -269,7 +274,7 @@ export default function DocumentReviewScreen() {
         </View>
         <View style={styles.currencyField}>
           <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
-            Currency
+            {t('billFields.currency')}
           </ThemedText>
           <SegmentedControl
             options={SUPPORTED_CURRENCIES.map((code) => ({ value: code, label: code }))}
@@ -282,7 +287,7 @@ export default function DocumentReviewScreen() {
       <View style={styles.row}>
         <View style={styles.flexItem}>
           <DateField
-            label="Issue date"
+            label={t('billFields.issueDate')}
             value={values.issueDate}
             onChange={(v) => setValues((prev) => (prev ? { ...prev, issueDate: v } : prev))}
             onClear={() => setValues((prev) => (prev ? { ...prev, issueDate: '' } : prev))}
@@ -291,7 +296,7 @@ export default function DocumentReviewScreen() {
         </View>
         <View style={styles.flexItem}>
           <DateField
-            label="Due date"
+            label={t('billFields.dueDate')}
             value={values.dueDate}
             onChange={(v) => setValues((prev) => (prev ? { ...prev, dueDate: v } : prev))}
             onClear={() => setValues((prev) => (prev ? { ...prev, dueDate: '' } : prev))}
@@ -303,7 +308,7 @@ export default function DocumentReviewScreen() {
       <View style={styles.row}>
         <View style={styles.flexItem}>
           <DateField
-            label="Billing period start"
+            label={t('billFields.billingPeriodStart')}
             value={values.billingPeriodStart}
             onChange={(v) => setValues((prev) => (prev ? { ...prev, billingPeriodStart: v } : prev))}
             onClear={() => setValues((prev) => (prev ? { ...prev, billingPeriodStart: '' } : prev))}
@@ -311,7 +316,7 @@ export default function DocumentReviewScreen() {
         </View>
         <View style={styles.flexItem}>
           <DateField
-            label="Billing period end"
+            label={t('billFields.billingPeriodEnd')}
             value={values.billingPeriodEnd}
             onChange={(v) => setValues((prev) => (prev ? { ...prev, billingPeriodEnd: v } : prev))}
             onClear={() => setValues((prev) => (prev ? { ...prev, billingPeriodEnd: '' } : prev))}
@@ -323,8 +328,8 @@ export default function DocumentReviewScreen() {
       ) : null}
 
       <View style={styles.actions}>
-        <Button label="Use these details" onPress={handleConfirm} loading={confirmExtraction.isPending} />
-        <Button label="Enter manually instead" variant="ghost" onPress={handleSkipToManual} />
+        <Button label={t('documentReview.useTheseDetails')} onPress={handleConfirm} loading={confirmExtraction.isPending} />
+        <Button label={t('documentReview.enterManually')} variant="ghost" onPress={handleSkipToManual} />
       </View>
     </ScreenContainer>
   );

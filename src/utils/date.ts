@@ -1,18 +1,28 @@
+import type { Locale } from '@/i18n';
+
 /**
  * All dates are stored as ISO 'YYYY-MM-DD' strings (Postgres `date`).
- * Display defaults to Israel's DD/MM/YYYY convention (see project defaults);
- * a locale param is accepted so this can grow to other formats later.
+ * Numeric formatting (formatDate) always uses Israel's DD/MM/YYYY
+ * convention regardless of locale; functions that spell out a month name
+ * take a `locale` param (defaulting to 'en') so they read correctly for
+ * Hebrew-only users too.
  */
 
-const MONTH_SHORT = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
+const MONTH_SHORT: Record<Locale, string[]> = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  he: ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יונ׳', 'יול׳', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'],
+};
 
-const MONTH_LONG = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+const MONTH_LONG: Record<Locale, string[]> = {
+  en: [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ],
+  he: [
+    'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+    'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
+  ],
+};
 
 function parseIsoDate(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number);
@@ -25,21 +35,22 @@ export function formatDate(iso: string | null | undefined): string {
   return `${d}/${m}/${y}`;
 }
 
-export function formatShortDate(iso: string | null | undefined): string {
+export function formatShortDate(iso: string | null | undefined, locale: Locale = 'en'): string {
   if (!iso) return '—';
   const date = parseIsoDate(iso);
-  return `${MONTH_SHORT[date.getMonth()]} ${date.getDate()}`;
+  return `${MONTH_SHORT[locale][date.getMonth()]} ${date.getDate()}`;
 }
 
 export function formatBillingPeriod(
   start: string | null | undefined,
   end: string | null | undefined,
+  locale: Locale = 'en',
 ): string | null {
   if (!start || !end) return null;
   const startDate = parseIsoDate(start);
   const endDate = parseIsoDate(end);
-  const startLabel = MONTH_SHORT[startDate.getMonth()];
-  const endLabel = MONTH_SHORT[endDate.getMonth()];
+  const startLabel = MONTH_SHORT[locale][startDate.getMonth()];
+  const endLabel = MONTH_SHORT[locale][endDate.getMonth()];
   if (startDate.getFullYear() === endDate.getFullYear()) {
     return `${startLabel}–${endLabel} ${endDate.getFullYear()}`;
   }
@@ -68,7 +79,7 @@ export function monthKey(iso: string): string {
 }
 
 /** e.g. "September 2026" — the section-header label for a month grouping. */
-export function formatMonthYear(key: string): string {
+export function formatMonthYear(key: string, locale: Locale = 'en'): string {
   const [year, month] = key.split('-').map(Number);
-  return `${MONTH_LONG[month - 1]} ${year}`;
+  return `${MONTH_LONG[locale][month - 1]} ${year}`;
 }

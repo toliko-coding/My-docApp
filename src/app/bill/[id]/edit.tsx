@@ -8,11 +8,13 @@ import { useBill, useUpdateBill } from '@/hooks/use-bills';
 import { useUserSettings } from '@/hooks/use-user-settings';
 import { findOrCreateProvider } from '@/repositories/providers.repository';
 import { useAuth } from '@/contexts/auth-context';
+import { useTranslation } from '@/i18n';
 import type { BillFormValues } from '@/schemas/bill-form.schema';
 import { syncBillReminders } from '@/services/bill-reminders';
 
 export default function EditBillScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: bill, isLoading, isError, error, refetch } = useBill(id);
   const { data: settings } = useUserSettings();
@@ -68,7 +70,7 @@ export default function EditBillScreen() {
 
       router.back();
     } catch (error) {
-      Alert.alert('Could not save bill', error instanceof Error ? error.message : 'Please try again.');
+      Alert.alert(t('billForm.saveErrorTitle'), error instanceof Error ? error.message : t('billForm.tryAgain'));
     }
   }
 
@@ -93,7 +95,7 @@ export default function EditBillScreen() {
           notes: bill.notes ?? '',
         }}
         onSubmit={handleSubmit}
-        submitLabel="Save Changes"
+        submitLabel={t('billForm.saveChangesTitle')}
         isSubmitting={updateBill.isPending}
       />
     </ScreenContainer>

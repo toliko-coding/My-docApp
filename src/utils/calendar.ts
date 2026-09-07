@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n';
 import type { BillWithRelations } from '@/types/database';
 import { formatMonthYear, monthKey } from '@/utils/date';
 
@@ -13,7 +14,7 @@ export interface BillMonthSection {
  * place on a due-date timeline, so they're left out entirely rather than
  * dumped into an "undated" bucket.
  */
-export function groupBillsByDueMonth(bills: BillWithRelations[]): BillMonthSection[] {
+export function groupBillsByDueMonth(bills: BillWithRelations[], locale: Locale = 'en'): BillMonthSection[] {
   const groups = new Map<string, BillWithRelations[]>();
 
   for (const bill of bills) {
@@ -28,7 +29,7 @@ export function groupBillsByDueMonth(bills: BillWithRelations[]): BillMonthSecti
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([key, data]) => ({
       key,
-      title: formatMonthYear(key),
+      title: formatMonthYear(key, locale),
       data: [...data].sort((a, b) => (a.due_date! < b.due_date! ? -1 : a.due_date! > b.due_date! ? 1 : 0)),
     }));
 }

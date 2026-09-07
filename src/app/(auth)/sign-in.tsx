@@ -40,7 +40,7 @@ export default function SignInScreen() {
   }
 
   function socialSignInComingSoon(providerName: string) {
-    Alert.alert(providerName, 'OAuth setup for this provider is not connected yet.');
+    Alert.alert(providerName, t('auth.oauthComingSoonMessage'));
   }
 
   return (

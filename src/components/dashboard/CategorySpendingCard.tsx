@@ -25,7 +25,7 @@ export function CategorySpendingCard({ categories }: CategorySpendingCardProps) 
       <ThemedText type="smallBold">{t('dashboard.monthlySpending')}</ThemedText>
       {categories.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
-          No payments recorded this month yet.
+          {t('dashboard.noSpendingRecorded')}
         </ThemedText>
       ) : (
         <View style={styles.list}>

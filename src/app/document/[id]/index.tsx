@@ -15,10 +15,12 @@ import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useDeleteDocument, useDocument, useDocumentSignedUrl } from '@/hooks/use-documents';
+import { useTranslation } from '@/i18n';
 import { formatFileSize } from '@/utils/file';
 
 export default function DocumentViewerScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: document, isLoading, isError } = useDocument(id);
   const { data: signedUrl } = useDocumentSignedUrl(document?.storage_path);
@@ -44,10 +46,10 @@ export default function DocumentViewerScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(localUri);
       } else {
-        Alert.alert('Sharing unavailable', 'This device does not support sharing files.');
+        Alert.alert(t('documentViewer.sharingUnavailableTitle'), t('documentViewer.sharingUnavailableMessage'));
       }
     } catch {
-      Alert.alert('Could not share document', 'Please try again.');
+      Alert.alert(t('documentViewer.shareErrorTitle'), t('billForm.tryAgain'));
     } finally {
       setIsSharing(false);
     }
@@ -60,10 +62,10 @@ export default function DocumentViewerScreen() {
 
   function handleDelete() {
     if (!document) return;
-    Alert.alert('Delete document', 'This removes the original file. Bills referencing it keep their other data.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('documentViewer.deleteConfirmTitle'), t('documentViewer.deleteConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteDocument.mutateAsync(document);
@@ -86,7 +88,7 @@ export default function DocumentViewerScreen() {
           <View style={[styles.pdfIcon, { backgroundColor: theme.backgroundElement }]}>
             <FileText size={32} color={theme.textSecondary} />
           </View>
-          <Button label="Open PDF" onPress={handleOpenPdf} disabled={!signedUrl} />
+          <Button label={t('documentViewer.openPdf')} onPress={handleOpenPdf} disabled={!signedUrl} />
         </Card>
       )}
 
@@ -98,8 +100,14 @@ export default function DocumentViewerScreen() {
       </Card>
 
       <View style={styles.actions}>
-        <Button label="Share / Download" variant="secondary" onPress={handleShare} loading={isSharing} disabled={!signedUrl} />
-        <Button label="Delete" variant="ghost" onPress={handleDelete} loading={deleteDocument.isPending} />
+        <Button
+          label={t('documentViewer.shareDownload')}
+          variant="secondary"
+          onPress={handleShare}
+          loading={isSharing}
+          disabled={!signedUrl}
+        />
+        <Button label={t('common.delete')} variant="ghost" onPress={handleDelete} loading={deleteDocument.isPending} />
       </View>
     </ScreenContainer>
   );

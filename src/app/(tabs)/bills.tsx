@@ -14,16 +14,16 @@ import { Radii, Spacing } from '@/constants/theme';
 import { useBills } from '@/hooks/use-bills';
 import { useCategories } from '@/hooks/use-categories';
 import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from '@/i18n';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { getCategoryName } from '@/utils/category';
 import type { BillStatus } from '@/types/database';
 
-const STATUS_FILTERS: { value: BillStatus | null; label: string }[] = [
-  { value: null, label: 'All' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'overdue', label: 'Overdue' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'partially_paid', label: 'Partial' },
+const STATUS_FILTERS: { value: BillStatus | null; labelKey: TranslationKey }[] = [
+  { value: null, labelKey: 'bills.filterAll' },
+  { value: 'pending', labelKey: 'status.pending' },
+  { value: 'overdue', labelKey: 'status.overdue' },
+  { value: 'paid', labelKey: 'status.paid' },
+  { value: 'partially_paid', labelKey: 'bills.filterPartial' },
 ];
 
 export default function BillsScreen() {
@@ -54,14 +54,14 @@ export default function BillsScreen() {
         </Pressable>
       </View>
 
-      <TextField placeholder="Search bills…" value={search} onChangeText={setSearch} style={styles.search} />
+      <TextField placeholder={t('bills.searchPlaceholder')} value={search} onChangeText={setSearch} style={styles.search} />
 
       <View style={styles.filters}>
         {STATUS_FILTERS.map((filter) => {
           const selected = filter.value === statusFilter;
           return (
             <Pressable
-              key={filter.label}
+              key={filter.labelKey}
               accessibilityRole="button"
               accessibilityState={{ selected }}
               onPress={() => setStatusFilter(filter.value)}
@@ -70,7 +70,7 @@ export default function BillsScreen() {
                 { backgroundColor: selected ? theme.primary : theme.backgroundElement, borderColor: theme.border },
               ]}>
               <ThemedText type="small" style={{ color: selected ? theme.primaryText : theme.text }}>
-                {filter.label}
+                {t(filter.labelKey)}
               </ThemedText>
             </Pressable>
           );
@@ -92,7 +92,7 @@ export default function BillsScreen() {
             { backgroundColor: categoryFilter === null ? theme.primary : theme.backgroundElement, borderColor: theme.border },
           ]}>
           <ThemedText type="small" style={{ color: categoryFilter === null ? theme.primaryText : theme.text }}>
-            All categories
+            {t('bills.allCategories')}
           </ThemedText>
         </Pressable>
         {categories.map((category) => {
@@ -132,7 +132,7 @@ export default function BillsScreen() {
         <EmptyState
           title={t('emptyStates.noBillsTitle')}
           subtitle={t('emptyStates.noBillsSubtitle')}
-          actionLabel="Add Bill"
+          actionLabel={t('billForm.addBillTitle')}
           onAction={() => router.push('/bill/new')}
         />
       )}

@@ -6,6 +6,7 @@ import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/i18n';
 import type { BillWithRelations } from '@/types/database';
 import { getEffectiveStatus } from '@/utils/bill-status';
 import { formatAmount } from '@/utils/currency';
@@ -13,8 +14,9 @@ import { formatBillingPeriod, formatDate } from '@/utils/date';
 
 export function BillListItem({ bill, onPress }: { bill: BillWithRelations; onPress: () => void }) {
   const theme = useTheme();
+  const { t, locale } = useTranslation();
   const status = getEffectiveStatus(bill);
-  const billingPeriod = formatBillingPeriod(bill.billing_period_start, bill.billing_period_end);
+  const billingPeriod = formatBillingPeriod(bill.billing_period_start, bill.billing_period_end, locale);
 
   return (
     <Pressable accessibilityRole="button" onPress={onPress}>
@@ -23,9 +25,9 @@ export function BillListItem({ bill, onPress }: { bill: BillWithRelations; onPre
           <CategoryIcon icon={bill.category?.icon} size={20} color={theme.text} />
         </View>
         <View style={styles.middle}>
-          <ThemedText numberOfLines={1}>{bill.provider?.name ?? 'Unknown provider'}</ThemedText>
+          <ThemedText numberOfLines={1}>{bill.provider?.name ?? t('common.unknownProvider')}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {bill.due_date ? `Due ${formatDate(bill.due_date)}` : 'No due date'}
+            {bill.due_date ? t('dashboard.dueOn', { date: formatDate(bill.due_date) }) : t('common.noDueDate')}
           </ThemedText>
           {billingPeriod ? (
             <ThemedText type="small" themeColor="textSecondary">

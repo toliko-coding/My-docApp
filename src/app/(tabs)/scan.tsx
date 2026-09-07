@@ -14,6 +14,7 @@ import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useUploadDocument } from '@/hooks/use-documents';
+import { useTranslation } from '@/i18n';
 import type { DocumentSource } from '@/types/database';
 import { FileValidationError, guessMimeTypeFromUri, type PickedFile } from '@/utils/file';
 
@@ -34,13 +35,14 @@ async function normalizeAsset(
 
 export default function ScanScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const uploadDocument = useUploadDocument();
   const [pickedFile, setPickedFile] = useState<PickedFile | null>(null);
 
   async function handleTakePhoto() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Camera access needed', 'Enable camera access in Settings to scan a document.');
+      Alert.alert(t('scan.cameraAccessTitle'), t('scan.cameraAccessMessage'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
@@ -54,7 +56,7 @@ export default function ScanScreen() {
   async function handlePickGallery() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Photo access needed', 'Enable photo library access in Settings to attach an image.');
+      Alert.alert(t('scan.photoAccessTitle'), t('scan.photoAccessMessage'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
@@ -72,9 +74,9 @@ export default function ScanScreen() {
   }
 
   const options: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => Promise<void> }[] = [
-    { icon: 'camera', label: 'Take a photo', onPress: handleTakePhoto },
-    { icon: 'image', label: 'Choose from gallery', onPress: handlePickGallery },
-    { icon: 'document', label: 'Upload a PDF', onPress: handlePickPdf },
+    { icon: 'camera', label: t('scan.takePhoto'), onPress: handleTakePhoto },
+    { icon: 'image', label: t('scan.chooseFromGallery'), onPress: handlePickGallery },
+    { icon: 'document', label: t('scan.uploadPdf'), onPress: handlePickPdf },
   ];
 
   async function handleConfirmUpload() {
@@ -83,25 +85,20 @@ export default function ScanScreen() {
       const { document, isDuplicate } = await uploadDocument.mutateAsync(pickedFile);
       setPickedFile(null);
       if (isDuplicate) {
-        Alert.alert(
-          'This document may already exist',
-          "A file with identical content was already uploaded. You can still attach it to a bill, or cancel and pick a different file.",
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Continue',
-              onPress: () => router.push(`/document/${document.id}/review`),
-            },
-          ],
-        );
+        Alert.alert(t('scan.duplicateTitle'), t('scan.duplicateMessage'), [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('common.continue'),
+            onPress: () => router.push(`/document/${document.id}/review`),
+          },
+        ]);
         return;
       }
       router.push(`/document/${document.id}/review`);
     } catch (error) {
       console.error('Document upload failed', error);
-      const message =
-        error instanceof FileValidationError ? error.message : 'Could not upload this document. Please try again.';
-      Alert.alert('Upload failed', message);
+      const message = error instanceof FileValidationError ? error.message : t('scan.uploadFailedMessage');
+      Alert.alert(t('scan.uploadFailedTitle'), message);
     }
   }
 
@@ -109,13 +106,13 @@ export default function ScanScreen() {
     return (
       <ScreenContainer>
         <ThemedText type="title" style={styles.title}>
-          Review document
+          {t('scan.reviewTitle')}
         </ThemedText>
         <DocumentPreview file={pickedFile} />
         <View style={styles.previewActions}>
-          <Button label="Use this document" onPress={handleConfirmUpload} loading={uploadDocument.isPending} />
+          <Button label={t('scan.useThisDocument')} onPress={handleConfirmUpload} loading={uploadDocument.isPending} />
           <Button
-            label="Choose a different file"
+            label={t('scan.chooseDifferentFile')}
             variant="ghost"
             onPress={() => setPickedFile(null)}
             disabled={uploadDocument.isPending}
@@ -128,11 +125,9 @@ export default function ScanScreen() {
   return (
     <ScreenContainer>
       <ThemedText type="title" style={styles.title}>
-        Scan a document
+        {t('scan.title')}
       </ThemedText>
-      <ThemedText themeColor="textSecondary">
-        Add a bill or receipt from your camera, photos, or a PDF file.
-      </ThemedText>
+      <ThemedText themeColor="textSecondary">{t('scan.subtitle')}</ThemedText>
 
       <View style={styles.options}>
         {options.map((option) => (

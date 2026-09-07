@@ -8,17 +8,19 @@ import { useBills } from '@/hooks/use-bills';
 import { useNotificationPermission } from '@/hooks/use-notification-permission';
 import { useTheme } from '@/hooks/use-theme';
 import { useUpdateUserSettings, useUserSettings } from '@/hooks/use-user-settings';
+import { useTranslation, type TranslationKey } from '@/i18n';
 import { resyncAllReminders } from '@/services/bill-reminders';
 
-const REMINDER_OPTIONS: { days: number; label: string }[] = [
-  { days: 7, label: '7 days before' },
-  { days: 3, label: '3 days before' },
-  { days: 1, label: '1 day before' },
-  { days: 0, label: 'On due date' },
+const REMINDER_OPTIONS: { days: number; labelKey: TranslationKey }[] = [
+  { days: 7, labelKey: 'profile.reminderDays7' },
+  { days: 3, labelKey: 'profile.reminderDays3' },
+  { days: 1, labelKey: 'profile.reminderDays1' },
+  { days: 0, labelKey: 'profile.reminderDays0' },
 ];
 
 export function NotificationSettingsCard() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: settings } = useUserSettings();
   const { data: bills } = useBills();
@@ -39,10 +41,7 @@ export function NotificationSettingsCard() {
     if (value && granted === false) {
       const result = await request();
       if (!result) {
-        Alert.alert(
-          'Notifications blocked',
-          'Enable notifications for DocApp in your device Settings to get payment reminders.',
-        );
+        Alert.alert(t('profile.notificationsBlockedTitle'), t('profile.notificationsBlockedMessage'));
         return;
       }
     }
@@ -64,9 +63,9 @@ export function NotificationSettingsCard() {
     <Card style={styles.card}>
       <View style={styles.row}>
         <View style={styles.info}>
-          <ThemedText>Payment reminders</ThemedText>
+          <ThemedText>{t('profile.paymentReminders')}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {isDisabled ? 'Requires a development build — unavailable in Expo Go on Android' : 'Get notified before a bill is due'}
+            {isDisabled ? t('profile.notificationsUnavailable') : t('profile.paymentRemindersSubtitle')}
           </ThemedText>
         </View>
         <Switch
@@ -92,7 +91,7 @@ export function NotificationSettingsCard() {
                   { backgroundColor: selected ? theme.primary : theme.backgroundElement, borderColor: theme.border },
                 ]}>
                 <ThemedText type="small" style={{ color: selected ? theme.primaryText : theme.text }}>
-                  {option.label}
+                  {t(option.labelKey)}
                 </ThemedText>
               </Pressable>
             );

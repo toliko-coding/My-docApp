@@ -14,10 +14,10 @@ import { useTranslation } from '@/i18n';
 import { groupBillsByDueMonth } from '@/utils/calendar';
 
 export default function CalendarScreen() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const theme = useTheme();
   const { data: bills, isLoading, isError, error, refetch } = useBills();
-  const sections = useMemo(() => groupBillsByDueMonth(bills ?? []), [bills]);
+  const sections = useMemo(() => groupBillsByDueMonth(bills ?? [], locale), [bills, locale]);
 
   return (
     <ScreenContainer>
@@ -46,11 +46,7 @@ export default function CalendarScreen() {
           renderItem={({ item }) => <BillListItem bill={item} onPress={() => router.push(`/bill/${item.id}`)} />}
         />
       ) : (
-        <EmptyState
-          icon="🗓️"
-          title="No upcoming payments"
-          subtitle="Once you add bills with due dates, they'll show up here on a timeline."
-        />
+        <EmptyState icon="🗓️" title={t('calendar.emptyTitle')} subtitle={t('calendar.emptySubtitle')} />
       )}
     </ScreenContainer>
   );

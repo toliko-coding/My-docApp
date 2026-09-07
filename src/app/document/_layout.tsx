@@ -2,9 +2,11 @@ import { Redirect, Stack } from 'expo-router';
 
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/i18n';
 
 export default function DocumentLayout() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { session, isLoading, isConfigured } = useAuth();
 
   if (!isLoading && isConfigured && !session) {
@@ -19,8 +21,8 @@ export default function DocumentLayout() {
         headerTintColor: theme.text,
         headerShadowVisible: false,
       }}>
-      <Stack.Screen name="[id]/index" options={{ title: 'Document' }} />
-      <Stack.Screen name="[id]/review" options={{ title: 'Review Details' }} />
+      <Stack.Screen name="[id]/index" options={{ title: t('documentViewer.title') }} />
+      <Stack.Screen name="[id]/review" options={{ title: t('documentReview.headerTitle') }} />
     </Stack>
   );
 }

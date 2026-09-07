@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui/Card';
 import { Radii } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/i18n';
 import type { DocumentRow } from '@/types/database';
 import { formatFileSize } from '@/utils/file';
 
@@ -15,6 +16,7 @@ interface AttachedDocumentCardProps {
 
 export function AttachedDocumentCard({ document, onPress }: AttachedDocumentCardProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const content = (
     <Card style={styles.card}>
@@ -23,7 +25,7 @@ export function AttachedDocumentCard({ document, onPress }: AttachedDocumentCard
       </View>
       <View style={styles.info}>
         <ThemedText type="small" themeColor="textSecondary">
-          Attached document
+          {t('documentViewer.attachedDocument')}
         </ThemedText>
         <ThemedText numberOfLines={1}>{document.file_name}</ThemedText>
         <ThemedText type="small" themeColor="textMuted">

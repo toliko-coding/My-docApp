@@ -24,7 +24,7 @@ export function UpcomingPaymentsCard({ bills, onPressBill }: UpcomingPaymentsCar
       <ThemedText type="smallBold">{t('dashboard.upcomingPayments')}</ThemedText>
       {bills.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
-          Nothing due soon.
+          {t('dashboard.nothingDueSoon')}
         </ThemedText>
       ) : (
         <View style={styles.list}>
@@ -38,7 +38,7 @@ export function UpcomingPaymentsCard({ bills, onPressBill }: UpcomingPaymentsCar
                 <CategoryIcon icon={bill.category?.icon} size={16} color={theme.text} />
               </View>
               <View style={styles.info}>
-                <ThemedText numberOfLines={1}>{bill.provider?.name ?? 'Unknown provider'}</ThemedText>
+                <ThemedText numberOfLines={1}>{bill.provider?.name ?? t('common.unknownProvider')}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   {t('dashboard.dueOn', { date: formatDate(bill.due_date) })}
                 </ThemedText>

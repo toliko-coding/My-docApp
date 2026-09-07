@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/i18n';
 import type { BillWithRelations } from '@/types/database';
 import { formatAmount } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
@@ -20,11 +21,15 @@ interface MatchSuggestionCardProps {
 
 export function MatchSuggestionCard({ bill, flavor, onPrimaryAction, onDismiss, isLoading }: MatchSuggestionCardProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
-  const title =
-    flavor === 'bill_receipt' ? 'Looks like a payment for an existing bill' : 'This might already be in your bills';
-  const primaryLabel = flavor === 'bill_receipt' ? 'Mark existing bill as paid' : 'View existing bill';
-  const dismissLabel = flavor === 'bill_receipt' ? "It's not the same bill" : "It's a different bill";
+  const title = t(flavor === 'bill_receipt' ? 'documentReview.matchBillReceiptTitle' : 'documentReview.matchDuplicateTitle');
+  const primaryLabel = t(
+    flavor === 'bill_receipt' ? 'documentReview.matchPrimaryBillReceipt' : 'documentReview.matchPrimaryDuplicate',
+  );
+  const dismissLabel = t(
+    flavor === 'bill_receipt' ? 'documentReview.matchDismissBillReceipt' : 'documentReview.matchDismissDuplicate',
+  );
 
   return (
     <Card style={[styles.card, { backgroundColor: theme.warningBg, borderColor: theme.warning }]}>
@@ -32,10 +37,10 @@ export function MatchSuggestionCard({ bill, flavor, onPrimaryAction, onDismiss, 
         {title}
       </ThemedText>
       <View style={styles.billInfo}>
-        <ThemedText numberOfLines={1}>{bill.provider?.name ?? 'Unknown provider'}</ThemedText>
+        <ThemedText numberOfLines={1}>{bill.provider?.name ?? t('common.unknownProvider')}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {formatAmount(bill.amount, bill.currency)}
-          {bill.due_date ? ` · Due ${formatDate(bill.due_date)}` : ''}
+          {bill.due_date ? ` · ${t('dashboard.dueOn', { date: formatDate(bill.due_date) })}` : ''}
         </ThemedText>
       </View>
       <View style={styles.actions}>
