@@ -20,6 +20,7 @@ export function TextField({ label, error, style, ...rest }: TextFieldProps) {
         </ThemedText>
       ) : null}
       <TextInput
+        accessibilityLabel={label}
         placeholderTextColor={theme.textMuted}
         style={[
           styles.input,

@@ -72,11 +72,21 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
+      "\\.css$": "<rootDir>/src/test-utils/style-mock.js",
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "testPathIgnorePatterns": [
       "/node_modules/",
       "<rootDir>/supabase/functions/"
-    ]
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|lucide-react-native))",
+      "/node_modules/react-native-reanimated/plugin/",
+      "/node_modules/@react-native/babel-preset/"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx|mjs|ts|tsx)$": "babel-jest",
+      "^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$": "<rootDir>/node_modules/@react-native/jest-preset/jest/assetFileTransformer.js"
+    }
   }
 }
