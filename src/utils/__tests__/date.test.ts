@@ -1,4 +1,13 @@
-import { formatBillingPeriod, formatDate, formatShortDate, isPastDue, toIsoDate, todayIso } from '@/utils/date';
+import {
+  formatBillingPeriod,
+  formatDate,
+  formatMonthYear,
+  formatShortDate,
+  isPastDue,
+  monthKey,
+  toIsoDate,
+  todayIso,
+} from '@/utils/date';
 
 describe('formatDate', () => {
   it('converts an ISO date to DD/MM/YYYY', () => {
@@ -71,5 +80,18 @@ describe('isPastDue', () => {
 
   it('is true for a due date before today', () => {
     expect(isPastDue('2026-09-03')).toBe(true);
+  });
+});
+
+describe('monthKey', () => {
+  it('extracts the YYYY-MM prefix', () => {
+    expect(monthKey('2026-09-04')).toBe('2026-09');
+  });
+});
+
+describe('formatMonthYear', () => {
+  it('renders a YYYY-MM key as a full month name and year', () => {
+    expect(formatMonthYear('2026-09')).toBe('September 2026');
+    expect(formatMonthYear('2027-01')).toBe('January 2027');
   });
 });
