@@ -168,7 +168,10 @@ const styles = StyleSheet.create({
     borderRadius: Radii.pill,
     borderWidth: 1,
   },
-  categoryFiltersScroll: { flexGrow: 0 },
+  // Unlike a plain View, a horizontal ScrollView doesn't self-size along its
+  // cross axis to fit its content — without an explicit height it renders
+  // shorter than the chip pills need, clipping their text and icons.
+  categoryFiltersScroll: { flexGrow: 0, height: 60 },
   categoryFilters: { gap: Spacing.one, paddingVertical: 2, alignItems: 'center' },
   categoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   list: { gap: Spacing.two, paddingBottom: Spacing.six },
