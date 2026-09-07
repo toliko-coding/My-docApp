@@ -1,5 +1,7 @@
 # DocApp
 
+[![CI](https://github.com/toliko-coding/My-docApp/actions/workflows/ci.yml/badge.svg)](https://github.com/toliko-coding/My-docApp/actions/workflows/ci.yml)
+
 A mobile app (iOS + Android, via React Native + Expo) that centralizes household bills, receipts, and payments: scan a document, let AI extract the details, review them, and track everything from one dashboard.
 
 ## Stack
@@ -92,6 +94,8 @@ npm run typecheck     # tsc --noEmit
 npm run lint          # expo lint
 npm test              # jest + @testing-library/react-native — unit and component tests
 ```
+
+All three also run automatically on every push and pull request via GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## What's real vs. mocked right now
 

@@ -1,3 +1,5 @@
+/* global jest */
+
 // @supabase/realtime-js checks for a global WebSocket constructor at
 // createClient() time (even though tests never actually open a socket) —
 // this repo's Node version predates Node's native WebSocket, so without a

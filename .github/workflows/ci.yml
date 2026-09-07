@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        # react-native@0.86.2 pins @react-native/jest-preset to exactly
+        # 0.86.2 as an optional peer, while jest-expo@57.0.5 (the latest
+        # release) wants ^0.86.3 — an unresolved upstream mismatch between
+        # the two packages at their current SDK 57 patch versions, not
+        # something fixable by picking a different version on our end.
+        run: npm ci --legacy-peer-deps
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
