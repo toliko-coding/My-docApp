@@ -24,6 +24,17 @@ jobs:
         # something fixable by picking a different version on our end.
         run: npm ci --legacy-peer-deps
 
+      - name: Generate expo-env.d.ts
+        # Normally created the first time `expo start`/`expo prebuild` runs
+        # locally, then left out of git on purpose (see the file's own
+        # comment) since every dev environment regenerates it. CI never
+        # starts the dev server, so without this, typecheck fails on a
+        # fresh checkout — it references expo/types, which is what declares
+        # the ambient *.css / *.module.css module types the app relies on
+        # (global.css, animated-icon.module.css). Content is fixed and
+        # identical for every Expo project; it's not something to compute.
+        run: echo '/// <reference types="expo/types" />' > expo-env.d.ts
+
       - name: Typecheck
         run: npm run typecheck
 
