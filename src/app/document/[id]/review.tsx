@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AttachedDocumentCard } from '@/components/documents/AttachedDocumentCard';
 import { MatchSuggestionCard } from '@/components/documents/MatchSuggestionCard';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { DateField } from '@/components/ui/DateField';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { ScanningLogo } from '@/components/ui/ScanningLogo';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { TextField } from '@/components/ui/TextField';
@@ -205,7 +206,7 @@ export default function DocumentReviewScreen() {
     return (
       <ScreenContainer>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" />
+          <ScanningLogo />
           <ThemedText type="subtitle" style={styles.loadingTitle}>
             {t('documentReview.readingTitle')}
           </ThemedText>

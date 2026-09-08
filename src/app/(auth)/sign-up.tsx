@@ -5,6 +5,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { LogoMark } from '@/components/ui/LogoMark';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { TextField } from '@/components/ui/TextField';
 import { Spacing } from '@/constants/theme';
@@ -47,6 +48,7 @@ export default function SignUpScreen() {
   return (
     <ScreenContainer scroll>
       <View style={styles.header}>
+        <LogoMark size={36} />
         <ThemedText type="title" style={styles.title}>
           {t('auth.signUp')}
         </ThemedText>
@@ -94,7 +96,7 @@ export default function SignUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { marginTop: Spacing.five },
+  header: { marginTop: Spacing.five, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   title: { fontSize: 32, lineHeight: 38 },
   form: { gap: Spacing.three },
   policyRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: Spacing.three },

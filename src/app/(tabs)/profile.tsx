@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 
 import { AppearanceCard } from '@/components/profile/AppearanceCard';
 import { NotificationSettingsCard } from '@/components/profile/NotificationSettingsCard';
@@ -8,6 +8,7 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { LogoMark } from '@/components/ui/LogoMark';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
@@ -68,9 +69,12 @@ export default function ProfileScreen() {
 
           <Button label={t('auth.signOut')} variant="ghost" onPress={signOut} />
 
-          <ThemedText type="small" themeColor="textMuted" style={styles.about}>
-            {t('profile.aboutVersion', { version: Constants.expoConfig?.version ?? '1.0.0' })}
-          </ThemedText>
+          <View style={styles.about}>
+            <LogoMark size={16} />
+            <ThemedText type="small" themeColor="textMuted">
+              {t('profile.aboutVersion', { version: Constants.expoConfig?.version ?? '1.0.0' })}
+            </ThemedText>
+          </View>
         </>
       ) : null}
     </ScreenContainer>
@@ -80,5 +84,5 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   title: { fontSize: 26, lineHeight: 32, marginTop: Spacing.two },
   loading: { marginTop: Spacing.six },
-  about: { textAlign: 'center', marginTop: Spacing.two },
+  about: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: Spacing.two },
 });
