@@ -27,6 +27,8 @@ const en = {
     oauthComingSoonMessage: 'OAuth setup for this provider is not connected yet.',
     agreeToPolicyPrefix: 'By creating an account, you agree to our',
     privacyPolicy: 'Privacy Policy',
+    confirmPassword: 'Confirm Password',
+    passwordMismatch: "Passwords don't match.",
   },
   tabs: {
     home: 'Home',

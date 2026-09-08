@@ -29,6 +29,8 @@ const he: typeof en = {
     oauthComingSoonMessage: 'החיבור להתחברות דרך ספק זה עדיין לא הוגדר.',
     agreeToPolicyPrefix: 'ביצירת חשבון, אתה מסכים ל',
     privacyPolicy: 'מדיניות הפרטיות',
+    confirmPassword: 'אימות סיסמה',
+    passwordMismatch: 'הסיסמאות אינן תואמות.',
   },
   tabs: {
     home: 'בית',

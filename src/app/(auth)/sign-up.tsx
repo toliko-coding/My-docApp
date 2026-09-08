@@ -22,7 +22,9 @@ export default function SignUpScreen() {
   const { isConfigured, signUpWithPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isConfigured) {
@@ -39,6 +41,11 @@ export default function SignUpScreen() {
 
   async function handleSubmit() {
     setError(null);
+    setConfirmError(null);
+    if (password !== confirmPassword) {
+      setConfirmError(t('auth.passwordMismatch'));
+      return;
+    }
     setIsSubmitting(true);
     const { error: signUpError } = await signUpWithPassword(email.trim(), password);
     setIsSubmitting(false);
@@ -70,6 +77,14 @@ export default function SignUpScreen() {
           value={password}
           onChangeText={setPassword}
           error={error}
+        />
+        <TextField
+          label={t('auth.confirmPassword')}
+          secureTextEntry
+          autoComplete="password-new"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          error={confirmError}
         />
         <Button label={t('auth.signUp')} onPress={handleSubmit} loading={isSubmitting} />
       </View>
