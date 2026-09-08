@@ -27,6 +27,8 @@ const he: typeof en = {
     signOut: 'התנתקות',
     signInError: 'ההתחברות נכשלה. בדוק את הפרטים ונסה שוב.',
     oauthComingSoonMessage: 'החיבור להתחברות דרך ספק זה עדיין לא הוגדר.',
+    agreeToPolicyPrefix: 'ביצירת חשבון, אתה מסכים ל',
+    privacyPolicy: 'מדיניות הפרטיות',
   },
   tabs: {
     home: 'בית',

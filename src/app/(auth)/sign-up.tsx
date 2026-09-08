@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +10,11 @@ import { TextField } from '@/components/ui/TextField';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useTranslation } from '@/i18n';
+
+// TODO: swap for the policy's permanent hosted URL before submitting to the
+// stores — this is a draft Claude Artifact link with placeholder content
+// (contact address, effective date) still to be filled in.
+const PRIVACY_POLICY_URL = 'https://claude.ai/code/artifact/a72040cc-0d69-4b58-9a16-85b8caee27d1';
 
 export default function SignUpScreen() {
   const { t } = useTranslation();
@@ -67,6 +72,18 @@ export default function SignUpScreen() {
         <Button label={t('auth.signUp')} onPress={handleSubmit} loading={isSubmitting} />
       </View>
 
+      <View style={styles.policyRow}>
+        <ThemedText type="small" themeColor="textSecondary">
+          {t('auth.agreeToPolicyPrefix')}
+        </ThemedText>
+        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
+          <ThemedText type="small" themeColor="primary">
+            {' '}
+            {t('auth.privacyPolicy')}
+          </ThemedText>
+        </Pressable>
+      </View>
+
       <Link href="/(auth)/sign-in" style={styles.link}>
         <ThemedText type="link" themeColor="textSecondary">
           {t('auth.haveAccount')} {t('auth.signIn')}
@@ -80,5 +97,6 @@ const styles = StyleSheet.create({
   header: { marginTop: Spacing.five },
   title: { fontSize: 32, lineHeight: 38 },
   form: { gap: Spacing.three },
+  policyRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: Spacing.three },
   link: { alignSelf: 'center', marginTop: Spacing.three },
 });

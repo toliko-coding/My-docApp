@@ -25,6 +25,8 @@ const en = {
     signOut: 'Sign Out',
     signInError: 'Could not sign in. Check your details and try again.',
     oauthComingSoonMessage: 'OAuth setup for this provider is not connected yet.',
+    agreeToPolicyPrefix: 'By creating an account, you agree to our',
+    privacyPolicy: 'Privacy Policy',
   },
   tabs: {
     home: 'Home',
