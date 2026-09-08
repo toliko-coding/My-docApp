@@ -10,6 +10,7 @@ import { UpcomingPaymentsCard } from '@/components/dashboard/UpcomingPaymentsCar
 import { ThemedText } from '@/components/themed-text';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { LogoMark } from '@/components/ui/LogoMark';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   return (
     <ScreenContainer scroll>
       <View style={styles.header}>
+        <LogoMark size={28} />
         <ThemedText type="title" style={styles.greeting}>
           {t('dashboard.greeting', { name: displayName })}
         </ThemedText>
@@ -77,7 +79,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { marginTop: Spacing.two },
+  header: { marginTop: Spacing.two, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   greeting: { fontSize: 26, lineHeight: 32 },
   content: { gap: Spacing.three, marginTop: Spacing.three, paddingBottom: Spacing.six },
   loading: { marginTop: Spacing.six },

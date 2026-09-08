@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { LogoMark } from '@/components/ui/LogoMark';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { TextField } from '@/components/ui/TextField';
 import { Radii, Spacing } from '@/constants/theme';
@@ -45,9 +46,12 @@ export default function BillsScreen() {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          {t('tabs.bills')}
-        </ThemedText>
+        <View style={styles.titleRow}>
+          <LogoMark size={26} />
+          <ThemedText type="title" style={styles.title}>
+            {t('tabs.bills')}
+          </ThemedText>
+        </View>
         <Pressable
           accessibilityRole="button"
           onPress={() => setIsAddMenuOpen(true)}
@@ -152,6 +156,7 @@ export default function BillsScreen() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   title: { fontSize: 26, lineHeight: 32 },
   addButton: {
     width: 40,

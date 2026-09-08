@@ -36,9 +36,12 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer scroll>
-      <ThemedText type="title" style={styles.title}>
-        {t('tabs.profile')}
-      </ThemedText>
+      <View style={styles.header}>
+        <LogoMark size={26} />
+        <ThemedText type="title" style={styles.title}>
+          {t('tabs.profile')}
+        </ThemedText>
+      </View>
 
       {isLoadingProfile || !user ? (
         <ActivityIndicator style={styles.loading} />
@@ -82,7 +85,8 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, lineHeight: 32, marginTop: Spacing.two },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginTop: Spacing.two },
+  title: { fontSize: 26, lineHeight: 32 },
   loading: { marginTop: Spacing.six },
   about: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: Spacing.two },
 });
